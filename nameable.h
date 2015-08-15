@@ -57,7 +57,6 @@ struct FindNameableResult
     }
 };
 
-
 template<typename Container>
 struct FindNameableResult<const Container>
 {
