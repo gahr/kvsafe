@@ -33,10 +33,10 @@ struct IsSameName
     const std::string& name;
     IsSameName(const std::string& name) : name{name} {}
     template<typename T>
-        bool operator()(const T& obj)
-        {
-            return name == obj.name();
-        }
+    bool operator()(const T& obj)
+    {
+        return name == obj.name();
+    }
 };
 
 template<typename Container>
