@@ -25,9 +25,37 @@
 
 #pragma once
 
+#include <iostream>
+
 namespace Consoler {
 struct Simple
 {
+    Simple(int& argc, char ** argv)
+    {}
+
+    void emitEntities(const std::vector<Interface::StringRef>& entities) const
+    {
+        for (const auto& e : entities)
+        {
+            std::cout << e.get() << "\n";
+        }
+    }
+
+    void emitProps(const std::string& entity,
+                   const std::vector<Interface::StringRef>& props) const
+    {
+        for (const auto& p : props)
+        {
+            std::cout << entity << "." << p.get() << "\n";
+        }
+    }
+
+    void emitValue(const std::string& entity,
+                   const std::string& prop,
+                   const std::string& value) const
+    {
+        std::cout << entity << "." << prop << ": " << value << "\n";
+    }
 
 };
 }

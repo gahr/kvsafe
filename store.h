@@ -40,6 +40,7 @@ class Store
     Entities    d_entities;
     std::string d_password;
     bool        d_modified;
+    bool        d_loaded;
 
     Filer       d_filer;
     Consoler    d_consoler;
@@ -55,7 +56,7 @@ public:
 
     auto entities() const -> decltype(d_entities);
 
-    void changePassword();
+    bool changePassword();
 
     void emitEntities(const std::string& match = std::string()) const;
     void emitProps(const std::string& entity) const;
@@ -71,6 +72,9 @@ public:
 private:
     bool modified() const;
     void modified(bool);
+
+    bool loaded() const;
+    void loaded(bool);
 };
 
 #include "store.hh"

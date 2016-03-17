@@ -25,8 +25,33 @@
 #include "store.h"
 #include "filer/simple.h"
 #include "consoler/xo.h"
+#include "consoler/simple.h"
 
 #include <unistd.h>
+
+static void usage()
+{
+    static const char * p = "kvsafe";
+    std::cout
+        << p << "\n"
+             << "\tEmit all entities.\n\n"
+        << p << " e\n"
+             << "\tEmit all keys for entity e.\n\n"
+        << p << " e k\n"
+             << "\tEmit the value of entity e's key k.\n\n"
+        << p << " e k v\n"
+             << "\tSet or change to v the value of entity's e key k.\n\n"
+        << p << " -d e\n"
+             << "\tRemove entity e.\n\n"
+        << p << " -d e k\n"
+             << "\tRemove key k of entity e.\n\n"
+        << p << " -e\n"
+             << "\tExport the whole database.\n\n"
+        << p << " -p\n"
+             << "\tChange the password.\n\n"
+        << p << " -h\n"
+             << "\tPrint this help message.\n\n";
+}
 
 int main(int argc, char ** argv)
 {
@@ -37,11 +62,13 @@ int main(int argc, char ** argv)
     enum {
         DEFAULT,
         DELETE,
-        CHPASS
+        EXPORT,
+        CHPASS,
+        HELP
     } mode { DEFAULT };
     
     int ch;
-    while ((ch = getopt(argc, argv, "df:p")) != -1)
+    while ((ch = getopt(argc, argv, "def:hp")) != -1)
     {
         switch (ch)
         {
@@ -49,8 +76,16 @@ int main(int argc, char ** argv)
                 mode = DELETE;
                 break;
 
+            case 'e':
+                mode = EXPORT;
+                break;
+
             case 'f':
                 filename = optarg;
+                break;
+
+            case 'h':
+                mode = HELP;
                 break;
 
             case 'p':
@@ -63,35 +98,101 @@ int main(int argc, char ** argv)
     argv += optind;
 
     store.setFilename(filename);
-    store.load();
 
     switch (mode)
     {
         case DEFAULT:
             switch (argc)
             {
-                case 0: store.emitEntities(); break;
-                case 1: store.emitProps(argv[0]); break;
-                case 2: store.emitValue(argv[0], argv[1]); break;
-                case 3: store.set(argv[0], argv[1], argv[2]); break;
-                default: break;
+                case 0:
+                   store.load();
+                   store.emitEntities();
+                   break;
+
+                case 1:
+                  store.load();
+                  store.emitProps(argv[0]);
+                  break;
+
+                case 2:
+                  store.load();
+                  store.emitValue(argv[0], argv[1]);
+                  break;
+
+                case 3:
+                  store.load();
+                  store.set(argv[0], argv[1], argv[2]);
+                  store.save();
+                  break;
+
+                default:
+                  usage();
+                  break;
             }
             break;
 
         case CHPASS:
-            store.changePassword();
+            switch (argc)
+            {
+                case 0:
+                    store.load();
+                    store.changePassword();
+                    store.save();
+                    break;
+
+                default:
+                    usage();
+                    break;
+            }
             break;
 
         case DELETE:
             switch (argc)
             {
-                case 0: break;
-                case 1: store.removeEntity(argv[0]); break;
-                case 2: store.removeProp(argv[0], argv[1]); break;
-                default: break;
+                case 0:
+                    usage();
+                    break;
+
+                case 1:
+                    store.load();
+                    store.removeEntity(argv[0]);
+                    store.save();
+                    break;
+
+                case 2:
+                    store.load();
+                    store.removeProp(argv[0], argv[1]);
+                    store.save();
+                    break;
+
+                default:
+                    usage();
+                    break;
             }
             break;
-    }
 
-    store.save();
+        case EXPORT:
+            switch (argc)
+            {
+                case 0:
+                    store.load();
+                    for (const auto& e : store.entities())
+                    {
+                        for (const auto&p : e.props())
+                        {
+                            store.emitValue(e.name(), p.name());
+                        }
+                    }
+                    break;
+
+                default:
+                    usage();
+                    break;
+            }
+            break;
+
+        case HELP:
+            usage();
+            break;
+    }
 }

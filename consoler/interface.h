@@ -33,6 +33,7 @@ struct Interface
 {
     typedef std::reference_wrapper<const std::string> StringRef;
 
+    Interface(int& argc, char ** argv);
     void emitEntities(const std::vector<StringRef>& entities) const;
 
     void emitProps(const std::string& entity,

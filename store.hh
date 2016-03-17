@@ -6,6 +6,7 @@
 template<typename FilerImpl, typename ConsolerImpl>
 Store<FilerImpl, ConsolerImpl>::Store(int& argc, char ** argv)
     : d_modified(false)
+    , d_loaded(false)
     , d_filer(argc, argv)
     , d_consoler(argc, argv)
 {
@@ -34,6 +35,21 @@ Store<FilerImpl, ConsolerImpl>::modified(bool m)
 }
 
 template<typename FilerImpl, typename ConsolerImpl>
+bool
+Store<FilerImpl, ConsolerImpl>::loaded() const
+{
+    return d_loaded;
+}
+
+template<typename FilerImpl, typename ConsolerImpl>
+void
+Store<FilerImpl, ConsolerImpl>::loaded(bool l)
+{
+    logger << "loaded(" << l << ")\n";
+    d_loaded = l;
+}
+
+template<typename FilerImpl, typename ConsolerImpl>
 void
 Store<FilerImpl, ConsolerImpl>::setFilename(const std::string& filename)
 {
@@ -54,8 +70,13 @@ bool
 Store<FilerImpl, ConsolerImpl>::load()
 {
     logger << "Store::load()\n";
+    if (loaded())
+    {
+        logger << "already loaded\n";
+        return true;
+    }
 
-    while(d_password.empty())
+    while (d_password.empty())
     {
         logger << "getting password\n";
         d_password = Util::readPassword("Password");
@@ -64,6 +85,7 @@ Store<FilerImpl, ConsolerImpl>::load()
 
     bool ret = d_filer.load(*this, d_password);
     modified(false);
+    loaded(ret);
     return ret;
 }
 
@@ -88,6 +110,11 @@ Store<FilerImpl, ConsolerImpl>::emitEntities(const std::string& match) const
     std::regex r{match};
     std::vector<Consoler::Interface::StringRef> entityList;
 
+    if (!loaded())
+    {
+        return;
+    }
+
     for (const auto& e : d_entities)
     {
         if (e.skip())
@@ -110,6 +137,11 @@ template<typename FilerImpl, typename ConsolerImpl>
 void
 Store<FilerImpl, ConsolerImpl>::emitProps(const std::string& entity) const
 {
+    if (!loaded())
+    {
+        return;
+    }
+
     auto e = findNameable(d_entities, entity);
     if (!e || e->skip())
     {
@@ -133,6 +165,11 @@ template<typename FilerImpl, typename ConsolerImpl>
 void
 Store<FilerImpl, ConsolerImpl>::emitValue(const std::string& entity, const std::string& prop) const
 {
+    if (!loaded())
+    {
+        return;
+    }
+
     const auto e = findNameable(d_entities, entity);
     if (!e || e->skip())
     {
@@ -155,6 +192,7 @@ Store<FilerImpl, ConsolerImpl>::set(const std::string& entity,
         const std::string& value)
 {
     logger << "Store::set(" << entity << ", " << key << ", " << value << ")\n";
+
     auto er = findNameable(d_entities, entity);
     if (!er)
     {
@@ -199,6 +237,12 @@ void
 Store<FilerImpl, ConsolerImpl>::removeEntity(const std::string& entity)
 {
     logger << "Store::removeEntity(" << entity << ")\n";
+
+    if (!loaded())
+    {
+        return;
+    }
+
     auto er = findNameable(d_entities, entity);
     if (!er)
     {
@@ -216,6 +260,12 @@ void
 Store<FilerImpl, ConsolerImpl>::removeProp(const std::string& entity, const std::string& prop)
 {
     logger << "Store::removeProp(" << entity << ", " << prop << ")\n";
+
+    if (!loaded())
+    {
+        return;
+    }
+
     auto er = findNameable(d_entities, entity);
     if (!er)
     {
@@ -236,8 +286,20 @@ Store<FilerImpl, ConsolerImpl>::removeProp(const std::string& entity, const std:
 }
 
 template<typename FilerImpl, typename ConsolerImpl>
-void
+bool
 Store<FilerImpl, ConsolerImpl>::changePassword()
 {
+    if (!loaded())
+    {
+        return false;
+    }
 
+    d_password.clear();
+    while (d_password.empty())
+    {
+        d_password = Util::readPassword("New password");
+    }
+
+    modified(true);
+    return true;
 }
