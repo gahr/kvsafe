@@ -229,7 +229,28 @@ Store<FilerImpl, ConsolerImpl>::emitValue(const std::string& entity, const std::
         return;
     }
 
-    return d_consoler.emitValue(entity, prop, p->value());
+    return d_consoler.emitValues({1, {entity, prop, p->value()}});
+}
+
+template<typename FilerImpl, typename ConsolerImpl>
+void
+Store<FilerImpl, ConsolerImpl>::emitValues() const
+{
+    if (!loaded())
+    {
+        return;
+    }
+
+    Consoler::Interface::EntityPropValues epv;
+    for (auto&& e : d_entities)
+    {
+        for (auto&& p : e.props())
+        {
+            epv.push_back({e.name(), p.name(), p.value()});
+        }
+    }
+
+    return d_consoler.emitValues(epv);
 }
 
 template<typename FilerImpl, typename ConsolerImpl>

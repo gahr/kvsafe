@@ -1,5 +1,5 @@
 ///
-// Copyright (C) 2014-2015 Pietro Cerutti <gahr@gahr.ch>
+// Copyright (C) 2014-2016 Pietro Cerutti <gahr@gahr.ch>
 // 
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
@@ -32,6 +32,13 @@ namespace Consoler {
 struct Interface
 {
     typedef std::reference_wrapper<const std::string> StringRef;
+    struct EntityPropValue
+    {
+        StringRef entity;
+        StringRef prop;
+        StringRef value;
+    };
+    typedef std::vector<EntityPropValue> EntityPropValues;
 
     Interface(int& argc, char ** argv);
     void emitEntities(const std::vector<StringRef>& entities) const;
@@ -39,8 +46,6 @@ struct Interface
     void emitProps(const std::string& entity,
                    const std::vector<StringRef>& props) const;
 
-    void emitValue(const std::string& entity,
-                   const std::string& prop,
-                   const std::string& value) const;
+    void emitValues(const EntityPropValues& list) const;
 };
 }

@@ -1,5 +1,5 @@
 ///
-// Copyright (C) 2014-2015 Pietro Cerutti <gahr@gahr.ch>
+// Copyright (C) 2014-2016 Pietro Cerutti <gahr@gahr.ch>
 // 
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
@@ -73,17 +73,18 @@ struct Xo
         xo_close_list("entry");
     }
 
-    void emitValue(const std::string& entity,
-                   const std::string& prop,
-                   const std::string& value) const
+    void emitValues(const Interface::EntityPropValues& list) const
     {
         xo_open_list("entry");
-        xo_open_instance("entry");
-        xo_emit("{k:entity/%s}.{:property/%s}: {:value/%s}\n",
-                entity.c_str(),
-                prop.c_str(),
-                value.c_str());
-        xo_close_instance("entry");
+        for (auto&& elem : list)
+        {
+            xo_open_instance("entry");
+            xo_emit("{k:entity/%s}.{:property/%s}: {:value/%s}\n",
+                    elem.entity.get().c_str(), 
+                    elem.prop.get().c_str(),
+                    elem.value.get().c_str());
+            xo_close_instance("entry");
+        }
         xo_close_list("entry");
     }
 };

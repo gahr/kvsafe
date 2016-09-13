@@ -43,8 +43,8 @@ kvsafe [options] <entity> <key> <value>
 kvsafe [options] {-d} <entity> [<key>]
     Delete a whole entity or one of its keys.
 
-kvsafe [options] {-e}
-    Export the whole database.
+kvsafe [options] {-a}
+    Emit all entities, keys and values.
 
 kvsafe [options] {-p}
     Change the password of the database.
@@ -72,23 +72,23 @@ int main(int argc, char ** argv)
     enum {
         DEFAULT,
         DELETE,
-        EXPORT,
+        ALL,
         CHPASS,
         HELP
     } mode { DEFAULT };
     
     int ch;
     bool done = false;
-    while ((ch = getopt(argc, argv, "def:hp-")) != -1 && !done)
+    while ((ch = getopt(argc, argv, "adf:hp-")) != -1 && !done)
     {
         switch (ch)
         {
-            case 'd':
-                mode = DELETE;
+            case 'a':
+                mode = ALL;
                 break;
 
-            case 'e':
-                mode = EXPORT;
+            case 'd':
+                mode = DELETE;
                 break;
 
             case 'f':
@@ -151,6 +151,11 @@ int main(int argc, char ** argv)
             }
             break;
 
+        case ALL:
+            store.load();
+            store.emitValues();
+            break;
+
         case CHPASS:
             switch (argc)
             {
@@ -183,26 +188,6 @@ int main(int argc, char ** argv)
                     store.load();
                     store.removeProp(argv[0], argv[1]);
                     store.save();
-                    break;
-
-                default:
-                    usage();
-                    break;
-            }
-            break;
-
-        case EXPORT:
-            switch (argc)
-            {
-                case 0:
-                    store.load();
-                    for (const auto& e : store.entities())
-                    {
-                        for (const auto&p : e.props())
-                        {
-                            store.emitValue(e.name(), p.name());
-                        }
-                    }
                     break;
 
                 default:

@@ -60,6 +60,7 @@ public:
     void emitEntities(const std::string& match = std::string()) const;
     void emitProps(const std::string& entity) const;
     void emitValue(const std::string& entity, const std::string& prop) const;
+    void emitValues() const;
 
     void set(const std::string& entity, 
              const std::string& key,

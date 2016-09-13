@@ -1,5 +1,5 @@
 ///
-// Copyright (C) 2014-2015 Pietro Cerutti <gahr@gahr.ch>
+// Copyright (C) 2014-2016 Pietro Cerutti <gahr@gahr.ch>
 // 
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
@@ -50,11 +50,15 @@ struct Simple
         }
     }
 
-    void emitValue(const std::string& entity,
-                   const std::string& prop,
-                   const std::string& value) const
+    void emitValues(const Interface::EntityPropValues& list) const
     {
-        std::cout << entity << "." << prop << ": " << value << "\n";
+        for (auto&& elem : list)
+        {
+            std::cout
+                << elem.entity.get() << "."
+                << elem.prop.get()   << ": "
+                << elem.value.get()  << "\n";
+        }
     }
 
 };
