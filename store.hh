@@ -3,6 +3,33 @@
 #include <functional>
 #include <regex>
 
+namespace {
+
+    struct PasswordSetter
+    {
+        template<typename FilerImpl>
+        typename std::enable_if<!FilerImpl::IS_PASSWORD_BASED, bool>::type
+        operator()(FilerImpl&, const std::string& msg)
+        {
+            return false;
+        }
+
+        template<typename FilerImpl>
+        typename std::enable_if<FilerImpl::IS_PASSWORD_BASED, bool>::type
+        operator()(FilerImpl& filer, const std::string& msg)
+        {
+            std::string password;
+            while (password.empty())
+            {
+                password = Util::readPassword(msg);
+            }
+
+            filer.setPassword(password);
+            return true;
+        }
+    };
+}
+
 template<typename FilerImpl, typename ConsolerImpl>
 Store<FilerImpl, ConsolerImpl>::Store(int& argc, char ** argv)
     : d_modified(false)
@@ -76,14 +103,9 @@ Store<FilerImpl, ConsolerImpl>::load()
         return true;
     }
 
-    while (d_password.empty())
-    {
-        logger << "getting password\n";
-        d_password = Util::readPassword("Password");
-        logger << "got password: " << d_password << "\n";
-    }
+    PasswordSetter()(d_filer, "Password");
 
-    bool ret = d_filer.load(*this, d_password);
+    bool ret = d_filer.load(*this);
     modified(false);
     loaded(ret);
     return ret;
@@ -100,7 +122,7 @@ Store<FilerImpl, ConsolerImpl>::save() const
         return true;
     }
 
-    return d_filer.save(*this, d_password);
+    return d_filer.save(*this);
 }
 
 template<typename FilerImpl, typename ConsolerImpl>
@@ -294,12 +316,9 @@ Store<FilerImpl, ConsolerImpl>::changePassword()
         return false;
     }
 
-    d_password.clear();
-    while (d_password.empty())
+    if (PasswordSetter()(d_filer, "New password"))
     {
-        d_password = Util::readPassword("New password");
+        modified(true);
     }
-
-    modified(true);
     return true;
 }

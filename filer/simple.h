@@ -35,6 +35,8 @@ class Simple
     std::string d_filename;
 
 public:
+    enum : bool { IS_PASSWORD_BASED = false };
+
     Simple(int& argc, char **)
     {
     }
@@ -49,7 +51,7 @@ public:
     }
 
     template<typename Store>
-    bool load(Store& store, const std::string& password)
+    bool load(Store& store)
     {
         if (d_filename.empty())
         {
@@ -66,14 +68,12 @@ public:
         while (true)
         {
             size_t i = 0;
-            for (auto& s : triple)
+            for (i = 0; i < 3; ++i)
             {
-                ifs >> s;
-                if (!ifs.good())
+                if (!std::getline(ifs, triple[i]))
                 {
                     break;
                 }
-                ++i;
             }
 
             switch (i)
@@ -98,7 +98,7 @@ public:
     }
 
     template<typename Store>
-    bool save(const Store& store, const std::string& password) const
+    bool save(const Store& store) const
     {
         if (d_filename.empty())
         {
@@ -128,10 +128,9 @@ public:
                 ofs << e.name() 
                     << "\n"
                     << p.name()
-                    << 
-                    "\n"
+                    << "\n"
                     << p.value()
-                    << "\n\n";
+                    << "\n";
 
                 if (!ofs.good())
                 {

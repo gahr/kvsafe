@@ -28,15 +28,19 @@
 namespace Filer {
 struct Interface
 {
+    enum : bool { IS_PASSWORD_BASED = false };
+
     Interface(int& argc, char ** argv);
 
     void setFilename(const std::string& filename);
 
-    template<typename Store>
-    bool load(Store& store, const std::string& password);
+    void setPassword(const std::string& password);
 
     template<typename Store>
-    bool save(const Store& store, const std::string& password);
+    bool load(Store& store);
+
+    template<typename Store>
+    bool save(const Store& store);
 
 };
 }

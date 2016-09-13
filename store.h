@@ -38,7 +38,6 @@ class Store
     typedef std::vector<Entity> Entities;
 
     Entities    d_entities;
-    std::string d_password;
     bool        d_modified;
     bool        d_loaded;
 
@@ -75,6 +74,8 @@ private:
 
     bool loaded() const;
     void loaded(bool);
+
+    void setPassword(const std::string& msg);
 };
 
 #include "store.hh"
