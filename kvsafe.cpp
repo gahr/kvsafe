@@ -27,37 +27,47 @@
 #include "consoler/xo.h"
 #include "consoler/simple.h"
 
+#include <cstdlib>
 #include <unistd.h>
 
 static void usage()
 {
-    static const char * p = "kvsafe";
-    std::cout
-        << p << "\n"
-             << "\tEmit all entities.\n\n"
-        << p << " e\n"
-             << "\tEmit all keys for entity e.\n\n"
-        << p << " e k\n"
-             << "\tEmit the value of entity e's key k.\n\n"
-        << p << " e k v\n"
-             << "\tSet or change to v the value of entity's e key k.\n\n"
-        << p << " -d e\n"
-             << "\tRemove entity e.\n\n"
-        << p << " -d e k\n"
-             << "\tRemove key k of entity e.\n\n"
-        << p << " -e\n"
-             << "\tExport the whole database.\n\n"
-        << p << " -p\n"
-             << "\tChange the password.\n\n"
-        << p << " -h\n"
-             << "\tPrint this help message.\n\n";
+    std::cout <<
+R"kvsafe_help(
+kvsafe [options] [<entity> [<key>]]
+    Emit all entities, all keys of an entity, or the value of an entity's key.
+
+kvsafe [options] <entity> <key> <value>
+    Set the value of an entity's key.
+
+kvsafe [options] {-d} <entity> [<key>]
+    Delete a whole entity or one of its keys.
+
+kvsafe [options] {-e}
+    Export the whole database.
+
+kvsafe [options] {-p}
+    Change the password of the database.
+
+kvsafe [options] {-h}
+    Print this help message.
+
+OPTIONS
+
+    -f filename
+        Use the specified database file instead of ~/.kvsafe.dat.
+
+    --
+        Mark the end of the options. Allows entity names starting with a dash.
+)kvsafe_help";
 }
 
 int main(int argc, char ** argv)
 {
     Store<Filer::Simple, Consoler::Xo> store(argc, argv);
 
-    std::string filename { ".kvsafe.dat" };
+    std::string filename { std::getenv("HOME") };
+    filename.append("/.kvsafe.dat");
 
     enum {
         DEFAULT,
@@ -68,7 +78,8 @@ int main(int argc, char ** argv)
     } mode { DEFAULT };
     
     int ch;
-    while ((ch = getopt(argc, argv, "def:hp")) != -1)
+    bool done = false;
+    while ((ch = getopt(argc, argv, "def:hp-")) != -1 && !done)
     {
         switch (ch)
         {
@@ -90,6 +101,15 @@ int main(int argc, char ** argv)
 
             case 'p':
                 mode = CHPASS;
+                break;
+
+            case '-':
+                done = true;
+                break;
+
+            default:
+                usage();
+                return 1;
                 break;
         }
     }
