@@ -70,9 +70,26 @@ public:
             size_t i = 0;
             for (i = 0; i < 3; ++i)
             {
-                if (!std::getline(ifs, triple[i]))
+                size_t length = 0;
+                ifs >> length;
+                if (!ifs)
                 {
-                    break;
+                    if (ifs.eof())
+                    {
+                        break;
+                    }
+                    return false;
+                }
+                ifs.ignore();
+                triple[i].resize(length, '\0');
+                ifs.read(&triple[i][0], length);
+                if (!ifs)
+                {
+                    if (ifs.eof())
+                    {
+                        break;
+                    }
+                    return false;
                 }
             }
 
@@ -125,12 +142,10 @@ public:
                     continue;
                 }
 
-                ofs << e.name() 
-                    << "\n"
-                    << p.name()
-                    << "\n"
-                    << p.value()
-                    << "\n";
+                ofs
+                    << e.name().length()  << ":" << e.name() 
+                    << p.name().length()  << ":" << p.name()
+                    << p.value().length() << ":" << p.value();
 
                 if (!ofs.good())
                 {
