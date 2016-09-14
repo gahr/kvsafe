@@ -152,9 +152,8 @@ Store<FilerImpl, ConsolerImpl>::save() const
 
 template<typename FilerImpl, typename ConsolerImpl>
 void
-Store<FilerImpl, ConsolerImpl>::emitEntities(const std::string& match) const
+Store<FilerImpl, ConsolerImpl>::emitEntities() const
 {
-    std::regex r{match};
     std::vector<Consoler::Interface::StringRef> entityList;
 
     if (!loaded())
@@ -165,11 +164,6 @@ Store<FilerImpl, ConsolerImpl>::emitEntities(const std::string& match) const
     for (const auto& e : d_entities)
     {
         if (e.skip())
-        {
-            continue;
-        }
-
-        if (!match.empty() && !std::regex_match(e.name(), r))
         {
             continue;
         }
