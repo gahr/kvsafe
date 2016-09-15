@@ -25,6 +25,7 @@
 
 #include "consoler/interface.h"
 
+#include <algorithm>
 #include <functional>
 #include <regex>
 
@@ -163,15 +164,61 @@ Store<FilerImpl, ConsolerImpl>::emitEntities() const
 
     for (const auto& e : d_entities)
     {
-        if (e.skip())
+        if (!e.skip())
         {
-            continue;
+            entityList.push_back(e.name());
         }
-
-        entityList.push_back(e.name());
     }
 
     return d_consoler.emitEntities(entityList);
+}
+
+namespace {
+
+    template<typename List>
+    struct EntityIterator
+    {
+        List& d_list;
+        EntityIterator(List& list)
+            : d_list(list)
+        {}
+
+        void operator()(const Entity& e)
+        {
+            if (!e.skip())
+            {
+                for (auto&& p : e.props())
+                {
+                    if (!p.skip())
+                    {
+                        add(e, p);
+                    }
+                }
+            }
+        }
+
+        void add(const Entity& e, const Prop& p);
+    };
+
+    template<>
+    void EntityIterator<Consoler::Interface::EntityPropList>::add(
+            const Entity& e, const Prop& p)
+    {
+        d_list.push_back({e.name(), p.name()});
+    }
+
+    template<>
+    void EntityIterator<Consoler::Interface::EntityPropValueList>::add(
+            const Entity& e, const Prop& p)
+    {
+        d_list.push_back({e.name(), p.name(), p.value()});
+    }
+
+    template<typename List>
+    EntityIterator<List> makeEntityIterator(List& list)
+    {
+        return EntityIterator<List>(list);
+    }
 }
 
 template<typename FilerImpl, typename ConsolerImpl>
@@ -183,64 +230,58 @@ Store<FilerImpl, ConsolerImpl>::emitProps(const std::string& entity) const
         return;
     }
 
-    auto e = findNameable(d_entities, entity);
-    if (!e || e->skip())
-    {
-        return;
-    }
+    Consoler::Interface::EntityPropList ep;
+    auto adder = makeEntityIterator(ep);
 
-    std::vector<Consoler::Interface::StringRef> props;
-    for (const auto& p : e->props())
+    if (entity.empty())
     {
-        if (p.skip())
+        std::for_each(d_entities.begin(), d_entities.end(), adder);
+    }
+    else
+    {
+        auto e = findNameable(d_entities, entity);
+        if (e)
         {
-            continue;
+            adder(*(e.operator->()));
         }
-
-        props.push_back(p.name());
     }
-    return d_consoler.emitProps(entity, props);
+
+    return d_consoler.emitProps(ep);
 }
 
 template<typename FilerImpl, typename ConsolerImpl>
 void
-Store<FilerImpl, ConsolerImpl>::emitValue(const std::string& entity, const std::string& prop) const
+Store<FilerImpl, ConsolerImpl>::emitValues(const std::string& entity, const std::string& prop) const
 {
     if (!loaded())
     {
         return;
     }
 
-    const auto e = findNameable(d_entities, entity);
-    if (!e || e->skip())
+    Consoler::Interface::EntityPropValueList epv;
+    auto adder = makeEntityIterator(epv);
+
+    if (entity.empty())
     {
-        return;
+        std::for_each(d_entities.begin(), d_entities.end(), adder);
     }
-
-    const auto p = findNameable(e.iter->props(), prop);
-    if (!p || p->skip())
+    else
     {
-        return;
-    }
-
-    return d_consoler.emitValues({1, {entity, prop, p->value()}});
-}
-
-template<typename FilerImpl, typename ConsolerImpl>
-void
-Store<FilerImpl, ConsolerImpl>::emitValues() const
-{
-    if (!loaded())
-    {
-        return;
-    }
-
-    Consoler::Interface::EntityPropValues epv;
-    for (auto&& e : d_entities)
-    {
-        for (auto&& p : e.props())
+        const auto e = findNameable(d_entities, entity);
+        if (e)
         {
-            epv.push_back({e.name(), p.name(), p.value()});
+            if (prop.empty())
+            {
+                adder(*(e.operator->()));
+            }
+            else
+            {
+                const auto p = findNameable(e.iter->props(), prop);
+                if (p)
+                {
+                    epv.push_back({entity, p->name(), p->value()});
+                }
+            }
         }
     }
 

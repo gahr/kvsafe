@@ -58,9 +58,8 @@ public:
     bool changePassword();
 
     void emitEntities() const;
-    void emitProps(const std::string& entity) const;
-    void emitValue(const std::string& entity, const std::string& prop) const;
-    void emitValues() const;
+    void emitProps(const std::string& entity = std::string()) const;
+    void emitValues(const std::string& entity = std::string(), const std::string& prop = std::string()) const;
 
     void set(const std::string& entity, 
              const std::string& key,

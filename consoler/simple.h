@@ -33,24 +33,25 @@ struct Simple
     Simple(int& argc, char ** argv)
     {}
 
-    void emitEntities(const std::vector<Interface::StringRef>& entities) const
+    void emitEntities(const Interface::EntityList& list) const
     {
-        for (const auto& e : entities)
+        for (const auto& e : list)
         {
             std::cout << e.get() << "\n";
         }
     }
 
-    void emitProps(const std::string& entity,
-                   const std::vector<Interface::StringRef>& props) const
+    void emitProps(const Interface::EntityPropList& list) const
     {
-        for (const auto& p : props)
+        for (auto&& elem : list)
         {
-            std::cout << entity << "." << p.get() << "\n";
+            std::cout
+                << elem.entity.get() << "."
+                << elem.prop.get()   << "\n";
         }
     }
 
-    void emitValues(const Interface::EntityPropValues& list) const
+    void emitValues(const Interface::EntityPropValueList& list) const
     {
         for (auto&& elem : list)
         {
@@ -60,6 +61,5 @@ struct Simple
                 << elem.value.get()  << "\n";
         }
     }
-
 };
 }

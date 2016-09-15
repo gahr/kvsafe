@@ -40,11 +40,14 @@ kvsafe [options] [<entity> [<key>]]
 kvsafe [options] <entity> <key> <value>
     Set the value of an entity's key.
 
+kvsafe [options] {-k} [<entity>]
+    Emit the keys of all entities, or of a specified entity.
+
+kvsafe [options] {-v} [<entity>]
+    Emit the values of all keys of all entities, or of a specified entity.
+
 kvsafe [options] {-d} <entity> [<key>]
     Delete a whole entity or one of its keys.
-
-kvsafe [options] {-a}
-    Emit all entities, keys and values.
 
 kvsafe [options] {-p}
     Change the password of the database.
@@ -72,21 +75,18 @@ int main(int argc, char ** argv)
     enum {
         DEFAULT,
         DELETE,
-        ALL,
         CHPASS,
+        KEYS,
+        VALS,
         HELP
     } mode { DEFAULT };
     
     int ch;
     bool done = false;
-    while ((ch = getopt(argc, argv, "adf:hp-")) != -1 && !done)
+    while ((ch = getopt(argc, argv, "df:hkpv-")) != -1 && !done)
     {
         switch (ch)
         {
-            case 'a':
-                mode = ALL;
-                break;
-
             case 'd':
                 mode = DELETE;
                 break;
@@ -99,8 +99,16 @@ int main(int argc, char ** argv)
                 mode = HELP;
                 break;
 
+            case 'k':
+                mode = KEYS;
+                break;
+
             case 'p':
                 mode = CHPASS;
+                break;
+
+            case 'v':
+                mode = VALS;
                 break;
 
             case '-':
@@ -136,7 +144,7 @@ int main(int argc, char ** argv)
 
                 case 2:
                   store.load();
-                  store.emitValue(argv[0], argv[1]);
+                  store.emitValues(argv[0], argv[1]);
                   break;
 
                 case 3:
@@ -151,9 +159,14 @@ int main(int argc, char ** argv)
             }
             break;
 
-        case ALL:
+        case KEYS:
             store.load();
-            store.emitValues();
+            store.emitProps(argv[0] ? argv[0] : std::string());
+            break;
+
+        case VALS:
+            store.load();
+            store.emitValues(argv[0] ? argv[0] : std::string());
             break;
 
         case CHPASS:

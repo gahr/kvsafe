@@ -32,20 +32,26 @@ namespace Consoler {
 struct Interface
 {
     typedef std::reference_wrapper<const std::string> StringRef;
+    typedef std::vector<StringRef> EntityList;
+
     struct EntityPropValue
     {
         StringRef entity;
         StringRef prop;
         StringRef value;
     };
-    typedef std::vector<EntityPropValue> EntityPropValues;
+    typedef std::vector<EntityPropValue> EntityPropValueList;
+
+    struct EntityProp
+    {
+        StringRef entity;
+        StringRef prop;
+    };
+    typedef std::vector<EntityProp> EntityPropList;
 
     Interface(int& argc, char ** argv);
-    void emitEntities(const std::vector<StringRef>& entities) const;
-
-    void emitProps(const std::string& entity,
-                   const std::vector<StringRef>& props) const;
-
-    void emitValues(const EntityPropValues& list) const;
+    void emitEntities(const EntityList& list) const;
+    void emitProps(const EntityPropList& list) const;
+    void emitValues(const EntityPropValueList& list) const;
 };
 }

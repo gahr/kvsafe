@@ -47,10 +47,10 @@ struct Xo
         xo_finish();
     }
 
-    void emitEntities(const std::vector<Interface::StringRef>& entities) const
+    void emitEntities(const Interface::EntityList& list) const
     {
         xo_open_list("entry");
-        for (const auto& e : entities)
+        for (const auto& e : list)
         {
             xo_open_instance("entry");
             xo_emit("{:entity/%s}\n", e.get().c_str());
@@ -59,21 +59,20 @@ struct Xo
         xo_close_list("entry");
     }
 
-    void emitProps(const std::string& entity,
-                   const std::vector<Interface::StringRef>& props) const
+    void emitProps(const Interface::EntityPropList& list) const
     {
         xo_open_list("entry");
-        for (const auto& p : props)
+        for (const auto& elem : list)
         {
             xo_open_instance("entry");
             xo_emit("{k:entity/%s}.{:property/%s}\n",
-                    entity.c_str(), p.get().c_str());
+                    elem.entity.get().c_str(), elem.prop.get().c_str());
             xo_close_instance("entry");
         }
         xo_close_list("entry");
     }
 
-    void emitValues(const Interface::EntityPropValues& list) const
+    void emitValues(const Interface::EntityPropValueList& list) const
     {
         xo_open_list("entry");
         for (auto&& elem : list)
