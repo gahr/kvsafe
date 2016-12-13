@@ -25,17 +25,25 @@
 
 #pragma once
 
+#include <array>
 #include <iomanip>
 #include <fstream>
+#include <sstream>
 #include <string>
+
+// NaCl
+#include <crypto_secretbox.h>
+#include <crypto_hash_sha256.h>
+#include <randombytes.h>
 
 namespace Filer {
 class Simple
 {
     std::string d_filename;
+    std::string d_key;
 
 public:
-    enum : bool { IS_PASSWORD_BASED = false };
+    enum : bool { IS_PASSWORD_BASED = true };
 
     Simple(int& argc, char **)
     {
@@ -50,6 +58,11 @@ public:
         d_filename = filename;
     }
 
+    void setPassword(const std::string& password)
+    {
+        d_key = crypto_hash_sha256(password);
+    }
+
     template<typename Store>
     bool load(Store& store)
     {
@@ -59,7 +72,8 @@ public:
         }
 
         std::ifstream ifs{d_filename.c_str(), std::ios::binary};
-        if (!ifs)
+        std::stringstream is;
+        if (!decrypt(ifs, is))
         {
             return false;
         }
@@ -71,21 +85,21 @@ public:
             for (i = 0; i < 3; ++i)
             {
                 size_t length = 0;
-                ifs >> length;
-                if (!ifs)
+                is >> length;
+                if (!is)
                 {
-                    if (ifs.eof())
+                    if (is.eof())
                     {
                         break;
                     }
                     return false;
                 }
-                ifs.ignore();
+                is.ignore();
                 triple[i].resize(length, '\0');
-                ifs.read(&triple[i][0], length);
-                if (!ifs)
+                is.read(&triple[i][0], length);
+                if (!is)
                 {
-                    if (ifs.eof())
+                    if (is.eof())
                     {
                         break;
                     }
@@ -122,11 +136,7 @@ public:
             return false;
         }
 
-        std::ofstream ofs{d_filename.c_str(), std::ios::binary};
-        if (!ofs)
-        {
-            return false;
-        }
+        std::ostringstream os;
 
         for (const auto& e : store.entities())
         {
@@ -142,19 +152,56 @@ public:
                     continue;
                 }
 
-                ofs
+                os
                     << e.name().length()  << ":" << e.name() 
                     << p.name().length()  << ":" << p.name()
                     << p.value().length() << ":" << p.value();
 
-                if (!ofs.good())
+                if (!os.good())
                 {
                     return false;
                 }
             }
         }
 
-        return true;
+        std::ofstream ofs{d_filename.c_str(), std::ios::binary};
+        return encrypt(os, ofs);
+    }
+
+private:
+    bool encrypt(const std::ostringstream& in, std::ostream& out) const
+    {
+        unsigned char noncearr[24];
+        randombytes(noncearr, 24);
+        std::string nonce{std::begin(noncearr), std::end(noncearr)};
+        try
+        {
+            out << nonce << crypto_secretbox(in.str(), nonce, d_key);
+        }
+        catch (...)
+        {
+            return false;
+        }
+
+        return out.good();
+    }
+    
+    bool decrypt(std::istream& in, std::ostream& out) const
+    {
+        std::array<char, 24> noncearr;
+        in.read(noncearr.data(), 24);
+        std::string nonce{std::begin(noncearr), std::end(noncearr)};
+        std::stringstream ss;
+        ss << in.rdbuf();
+        try {
+            out << crypto_secretbox_open(ss.str(), nonce, d_key);
+        }
+        catch (...)
+        {
+            return false;
+        }
+
+        return out.good();
     }
 };
 }
