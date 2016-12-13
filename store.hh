@@ -69,7 +69,7 @@ Store<FilerImpl, ConsolerImpl>::Store(int& argc, char ** argv)
 template<typename FilerImpl, typename ConsolerImpl>
 Store<FilerImpl, ConsolerImpl>::~Store()
 {
-    logger << "Store::~Store";
+    logger << "Store::~Store\n";
 }
 
 template<typename FilerImpl, typename ConsolerImpl>
