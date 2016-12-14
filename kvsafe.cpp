@@ -160,7 +160,7 @@ int main(int argc, char ** argv)
                             std::string triple[3];
                             for (size_t i = 0; i < 3; ++i)
                             {
-                                std::cin >> triple[i];
+                                std::getline(std::cin, triple[i]);
                             }
                             if (std::cin.eof())
                             {
