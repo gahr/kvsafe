@@ -165,42 +165,27 @@ public:
         }
 
         std::ofstream ofs{d_filename.c_str(), std::ios::binary};
-        return encrypt(os, ofs);
+        return encrypt(os.str(), ofs);
     }
 
 private:
-    bool encrypt(const std::ostringstream& in, std::ostream& out) const
+    bool encrypt(const std::string& in, std::ostream& out) const
     {
         unsigned char noncearr[24];
         randombytes(noncearr, 24);
         std::string nonce{std::begin(noncearr), std::end(noncearr)};
-        try
-        {
-            out << nonce << crypto_secretbox(in.str(), nonce, d_key);
-        }
-        catch (...)
-        {
-            return false;
-        }
-
+        out << nonce << crypto_secretbox(in, nonce, d_key);
         return out.good();
     }
     
     bool decrypt(std::istream& in, std::ostream& out) const
     {
-        std::array<char, 24> noncearr;
-        in.read(noncearr.data(), 24);
+        char noncearr[24];
+        in.read(noncearr, 24);
         std::string nonce{std::begin(noncearr), std::end(noncearr)};
         std::stringstream ss;
         ss << in.rdbuf();
-        try {
-            out << crypto_secretbox_open(ss.str(), nonce, d_key);
-        }
-        catch (...)
-        {
-            return false;
-        }
-
+        out << crypto_secretbox_open(ss.str(), nonce, d_key);
         return out.good();
     }
 };
