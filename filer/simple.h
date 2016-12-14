@@ -73,9 +73,9 @@ public:
 
         std::ifstream ifs { d_filename.c_str(), std::ios::binary };
         ifs.seekg(0, std::ios_base::end);
-        if (ifs.tellg() == 0)
+        if (ifs.tellg() <= 0)
         {
-            // empty file, assume ok
+            // empty or non-existant file, assume ok
             return true;
         }
         ifs.seekg(0);
