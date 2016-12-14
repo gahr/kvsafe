@@ -31,26 +31,57 @@
 
 namespace {
 
-    struct PasswordSetter
+    class PasswordPrompter
     {
-        template<typename FilerImpl>
-        typename std::enable_if<!FilerImpl::IS_PASSWORD_BASED, bool>::type
-        operator()(FilerImpl&, const std::string& msg)
-        {
-            return false;
-        }
+    private:
+        std::string d_prompt;
 
-        template<typename FilerImpl>
-        typename std::enable_if<FilerImpl::IS_PASSWORD_BASED, bool>::type
-        operator()(FilerImpl& filer, const std::string& msg)
+    public:
+        PasswordPrompter(const std::string& prompt)
+            : d_prompt(prompt)
+        {}
+
+        std::string operator()() const
         {
             std::string password;
             while (password.empty())
             {
-                password = Util::readPassword(msg);
+                password = Util::readPassword(d_prompt);
             }
+            return password;
+        }
+    };
 
-            filer.setPassword(password);
+    class PasswordCacher
+    {
+    private:
+        std::string d_password;
+
+    public:
+        PasswordCacher(const std::string& password)
+            : d_password(password)
+        {}
+
+        std::string operator()() const
+        {
+            return d_password;
+        }
+    };
+
+    struct PasswordSetter
+    {
+        template<typename PasswordProvider, typename FilerImpl>
+        typename std::enable_if<!FilerImpl::IS_PASSWORD_BASED, bool>::type
+        operator()(const PasswordProvider&, FilerImpl&)
+        {
+            return false;
+        }
+
+        template<typename PasswordProvider, typename FilerImpl>
+        typename std::enable_if<FilerImpl::IS_PASSWORD_BASED, bool>::type
+        operator()(const PasswordProvider& provider, FilerImpl& filer)
+        {
+            filer.setPassword(provider());
             return true;
         }
     };
@@ -60,6 +91,7 @@ template<typename FilerImpl, typename ConsolerImpl>
 Store<FilerImpl, ConsolerImpl>::Store(int& argc, char ** argv)
     : d_modified(false)
     , d_loaded(false)
+    , d_explicitPassword(false)
     , d_filer(argc, argv)
     , d_consoler(argc, argv)
 {
@@ -85,6 +117,15 @@ Store<FilerImpl, ConsolerImpl>::modified(bool m)
 {
     logger << "modified(" << m << ")\n";
     d_modified = m;
+}
+
+template<typename FilerImpl, typename ConsolerImpl>
+void
+Store<FilerImpl, ConsolerImpl>::setPassword(const std::string& password)
+{
+    logger << "Store::setPassword\n";
+    PasswordSetter()(PasswordCacher(password), d_filer);
+    d_explicitPassword = true;
 }
 
 template<typename FilerImpl, typename ConsolerImpl>
@@ -129,7 +170,10 @@ Store<FilerImpl, ConsolerImpl>::load()
         return true;
     }
 
-    PasswordSetter()(d_filer, "Password");
+    if (!d_explicitPassword)
+    {
+        PasswordSetter()(PasswordPrompter("Password"), d_filer);
+    }
 
     bool ret = d_filer.load(*this);
     modified(false);
@@ -397,7 +441,7 @@ Store<FilerImpl, ConsolerImpl>::changePassword()
         return false;
     }
 
-    if (PasswordSetter()(d_filer, "New password"))
+    if (PasswordSetter()(PasswordPrompter("New password"), d_filer))
     {
         modified(true);
     }

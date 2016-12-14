@@ -61,6 +61,8 @@ OPTIONS
     -f filename
         Use the specified database file instead of ~/.kvsafe.dat.
 
+    -P password
+        Specify a password on the command line.
     --
         Mark the end of the options. Allows entity names starting with a dash.
 )kvsafe_help";
@@ -74,6 +76,7 @@ int main(int argc, char ** argv)
     filename.append("/.kvsafe.dat");
 
     enum {
+        BULK,
         DEFAULT,
         DELETE,
         CHPASS,
@@ -84,10 +87,18 @@ int main(int argc, char ** argv)
     
     int ch;
     bool done = false;
-    while ((ch = getopt(argc, argv, "df:hkpv-")) != -1 && !done)
+    while ((ch = getopt(argc, argv, "bdf:hkpP:v-")) != -1 && !done)
     {
         switch (ch)
         {
+            case 'P':
+                store.setPassword(optarg);
+                break;
+
+            case 'b':
+                mode = BULK;
+                break;
+
             case 'd':
                 mode = DELETE;
                 break;
@@ -139,6 +150,36 @@ int main(int argc, char ** argv)
     {
         switch (mode)
         {
+            case BULK:
+                switch (argc)
+                {
+                    case 0:
+                        loadOrThrow();
+                        while (1)
+                        {
+                            std::string triple[3];
+                            for (size_t i = 0; i < 3; ++i)
+                            {
+                                std::cin >> triple[i];
+                            }
+                            if (std::cin.eof())
+                            {
+                                break;
+                            }
+                            else
+                            {
+                                store.set(triple[0], triple[1], triple[2]);
+                            }
+                        }
+                        store.save();
+                        break;
+
+                    default:
+                        usage();
+                        break;
+                }
+                break;
+
             case DEFAULT:
                 switch (argc)
                 {
@@ -164,7 +205,7 @@ int main(int argc, char ** argv)
                         break;
 
                     default:
-                        loadOrThrow();
+                        usage();
                         break;
                 }
                 break;

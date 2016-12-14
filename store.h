@@ -40,6 +40,7 @@ class Store
     Entities    d_entities;
     bool        d_modified;
     bool        d_loaded;
+    bool        d_explicitPassword;
 
     Filer       d_filer;
     Consoler    d_consoler;
@@ -68,14 +69,14 @@ public:
     void removeEntity(const std::string& entity);
     void removeProp(const std::string& entity, const std::string& prop);
 
+    void setPassword(const std::string& password);
+
 private:
     bool modified() const;
     void modified(bool);
 
     bool loaded() const;
     void loaded(bool);
-
-    void setPassword(const std::string& msg);
 };
 
 #include "store.hh"
