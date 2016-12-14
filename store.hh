@@ -148,7 +148,7 @@ Store<FilerImpl, ConsolerImpl>::save() const
         return true;
     }
 
-    return d_filer.save(*this);
+    return d_filer.save(entities());
 }
 
 template<typename FilerImpl, typename ConsolerImpl>

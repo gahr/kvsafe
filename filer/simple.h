@@ -71,7 +71,15 @@ public:
             return false;
         }
 
-        std::ifstream ifs{d_filename.c_str(), std::ios::binary};
+        std::ifstream ifs { d_filename.c_str(), std::ios::binary };
+        ifs.seekg(0, std::ios_base::end);
+        if (ifs.tellg() == 0)
+        {
+            // empty file, assume ok
+            return true;
+        }
+        ifs.seekg(0);
+
         std::stringstream is;
         if (!decrypt(ifs, is))
         {
@@ -128,8 +136,8 @@ public:
         return true;
     }
 
-    template<typename Store>
-    bool save(const Store& store) const
+    template<typename EntityList>
+    bool save(const EntityList& entities) const
     {
         if (d_filename.empty())
         {
@@ -138,7 +146,7 @@ public:
 
         std::ostringstream os;
 
-        for (const auto& e : store.entities())
+        for (const auto& e : entities)
         {
             if (e.skip())
             {
@@ -152,10 +160,9 @@ public:
                     continue;
                 }
 
-                os
-                    << e.name().length()  << ":" << e.name() 
-                    << p.name().length()  << ":" << p.name()
-                    << p.value().length() << ":" << p.value();
+                os << e.name().length()  << ":" << e.name() 
+                   << p.name().length()  << ":" << p.name()
+                   << p.value().length() << ":" << p.value();
 
                 if (!os.good())
                 {
@@ -164,7 +171,7 @@ public:
             }
         }
 
-        std::ofstream ofs{d_filename.c_str(), std::ios::binary};
+        std::ofstream ofs { d_filename.c_str(), std::ios::binary };
         return encrypt(os.str(), ofs);
     }
 
@@ -173,7 +180,7 @@ private:
     {
         unsigned char noncearr[24];
         randombytes(noncearr, 24);
-        std::string nonce{std::begin(noncearr), std::end(noncearr)};
+        std::string nonce { std::begin(noncearr), std::end(noncearr) };
         out << nonce << crypto_secretbox(in, nonce, d_key);
         return out.good();
     }
@@ -182,10 +189,17 @@ private:
     {
         char noncearr[24];
         in.read(noncearr, 24);
-        std::string nonce{std::begin(noncearr), std::end(noncearr)};
+        std::string nonce { std::begin(noncearr), std::end(noncearr) };
         std::stringstream ss;
         ss << in.rdbuf();
-        out << crypto_secretbox_open(ss.str(), nonce, d_key);
+        try
+        {
+            out << crypto_secretbox_open(ss.str(), nonce, d_key);
+        }
+        catch (...)
+        {
+            return false;
+        }
         return out.good();
     }
 };

@@ -39,8 +39,8 @@ struct Interface
     template<typename Store>
     bool load(Store& store);
 
-    template<typename Store>
-    bool save(const Store& store);
+    template<typename EntityList>
+    bool save(const EntityList& entities);
 
 };
 }

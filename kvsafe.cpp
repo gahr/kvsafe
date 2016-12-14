@@ -28,6 +28,7 @@
 #include "consoler/simple.h"
 
 #include <cstdlib>
+#include <stdexcept>
 #include <unistd.h>
 
 static void usage()
@@ -127,90 +128,105 @@ int main(int argc, char ** argv)
 
     store.setFilename(filename);
 
-    switch (mode)
+    auto loadOrThrow = [&store]() {
+        if (!store.load())
+        {
+            throw std::runtime_error("cannot open store");
+        }
+    };
+
+    try
     {
-        case DEFAULT:
-            switch (argc)
-            {
-                case 0:
-                   store.load();
-                   store.emitEntities();
-                   break;
+        switch (mode)
+        {
+            case DEFAULT:
+                switch (argc)
+                {
+                    case 0:
+                        loadOrThrow();
+                        store.emitEntities();
+                        break;
 
-                case 1:
-                  store.load();
-                  store.emitProps(argv[0]);
-                  break;
+                    case 1:
+                        loadOrThrow();
+                        store.emitProps(argv[0]);
+                        break;
 
-                case 2:
-                  store.load();
-                  store.emitValues(argv[0], argv[1]);
-                  break;
+                    case 2:
+                        loadOrThrow();
+                        store.emitValues(argv[0], argv[1]);
+                        break;
 
-                case 3:
-                  store.load();
-                  store.set(argv[0], argv[1], argv[2]);
-                  store.save();
-                  break;
+                    case 3:
+                        loadOrThrow();
+                        store.set(argv[0], argv[1], argv[2]);
+                        store.save();
+                        break;
 
-                default:
-                  usage();
-                  break;
-            }
-            break;
+                    default:
+                        loadOrThrow();
+                        break;
+                }
+                break;
 
-        case KEYS:
-            store.load();
-            store.emitProps(argv[0] ? argv[0] : std::string());
-            break;
+            case KEYS:
+                loadOrThrow();
+                store.emitProps(argv[0] ? argv[0] : std::string());
+                break;
 
-        case VALS:
-            store.load();
-            store.emitValues(argv[0] ? argv[0] : std::string());
-            break;
+            case VALS:
+                loadOrThrow();
+                store.emitValues(argv[0] ? argv[0] : std::string());
+                break;
 
-        case CHPASS:
-            switch (argc)
-            {
-                case 0:
-                    store.load();
-                    store.changePassword();
-                    store.save();
-                    break;
+            case CHPASS:
+                switch (argc)
+                {
+                    case 0:
+                        loadOrThrow();
+                        store.changePassword();
+                        store.save();
+                        break;
 
-                default:
-                    usage();
-                    break;
-            }
-            break;
+                    default:
+                        usage();
+                        break;
+                }
+                break;
 
-        case DELETE:
-            switch (argc)
-            {
-                case 0:
-                    usage();
-                    break;
+            case DELETE:
+                switch (argc)
+                {
+                    case 0:
+                        usage();
+                        break;
 
-                case 1:
-                    store.load();
-                    store.removeEntity(argv[0]);
-                    store.save();
-                    break;
+                    case 1:
+                        loadOrThrow();
+                        store.removeEntity(argv[0]);
+                        store.save();
+                        break;
 
-                case 2:
-                    store.load();
-                    store.removeProp(argv[0], argv[1]);
-                    store.save();
-                    break;
+                    case 2:
+                        loadOrThrow();
+                        store.removeProp(argv[0], argv[1]);
+                        store.save();
+                        break;
 
-                default:
-                    usage();
-                    break;
-            }
-            break;
+                    default:
+                        usage();
+                        break;
+                }
+                break;
 
-        case HELP:
-            usage();
-            break;
+            case HELP:
+                usage();
+                break;
+        }
+    }
+    catch (std::runtime_error& e)
+    {
+        std::cout << "Error: " << e.what() << "\n";
+        return 1;
     }
 }
