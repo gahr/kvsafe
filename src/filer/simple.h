@@ -80,7 +80,7 @@ public:
         }
         ifs.seekg(0);
 
-        std::stringstream is;
+        std::istringstream is;
         if (!decrypt(ifs, is))
         {
             return false;
@@ -127,7 +127,6 @@ public:
         }
 
         std::ostringstream os;
-
         for (const auto& e : entities)
         {
             if (e.skip())
@@ -154,7 +153,7 @@ public:
         }
 
         std::ofstream ofs { d_filename.c_str(), std::ios::binary };
-        return encrypt(os.str(), ofs);
+        return encrypt(os, ofs);
     }
 
 private:
@@ -187,30 +186,34 @@ private:
         return crypto_hash_sha256(val);
     }
 
-    bool encrypt(const std::string& in, std::ostream& out) const
+    bool encrypt(const std::ostringstream& in, std::ostream& out) const
     {
         std::array<unsigned char, 24> nonce;
         randombytes(nonce.data(), 24);
         std::string n { nonce.begin(), nonce.end() };
-        out << n << crypto_secretbox(in, n, d_key);
+        out << n << crypto_secretbox(in.str(), n, d_key);
         return out.good();
     }
 
-    bool decrypt(std::istream& in, std::ostream& out) const
+    bool decrypt(std::istream& in, std::istringstream& out) const
     {
         std::array<char, 24> nonce;
         in.read(nonce.data(), 24);
+        if (!in.good())
+        {
+            return false;
+        }
         std::stringstream ss;
         ss << in.rdbuf();
         try
         {
-            out << crypto_secretbox_open(ss.str(), { nonce.begin(), nonce.end() }, d_key);
+            out.str(crypto_secretbox_open(ss.str(), { nonce.begin(), nonce.end() }, d_key));
         }
         catch (...)
         {
             return false;
         }
-        return out.good();
+        return in.good();
     }
 };
 }
