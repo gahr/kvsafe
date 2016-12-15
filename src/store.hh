@@ -177,13 +177,13 @@ Store<FilerImpl, ConsolerImpl>::Store(int& argc, char ** argv)
     , d_filer(argc, argv)
     , d_consoler(argc, argv)
 {
-    logger << "Store::Store\n";
+    logger() << "Store::Store\n";
 }
 
 template<typename FilerImpl, typename ConsolerImpl>
 Store<FilerImpl, ConsolerImpl>::~Store()
 {
-    logger << "Store::~Store\n";
+    logger() << "Store::~Store\n";
 }
 
 template<typename FilerImpl, typename ConsolerImpl>
@@ -197,7 +197,7 @@ template<typename FilerImpl, typename ConsolerImpl>
 void
 Store<FilerImpl, ConsolerImpl>::modified(bool m)
 {
-    logger << "modified(" << m << ")\n";
+    logger() << "modified(" << m << ")\n";
     d_modified = m;
 }
 
@@ -205,7 +205,7 @@ template<typename FilerImpl, typename ConsolerImpl>
 void
 Store<FilerImpl, ConsolerImpl>::setPassword(const std::string& password)
 {
-    logger << "Store::setPassword\n";
+    logger() << "Store::setPassword\n";
     PasswordSetter()(PasswordCacher(password), d_filer);
     d_explicitPassword = true;
 }
@@ -221,7 +221,7 @@ template<typename FilerImpl, typename ConsolerImpl>
 void
 Store<FilerImpl, ConsolerImpl>::loaded(bool l)
 {
-    logger << "loaded(" << l << ")\n";
+    logger() << "loaded(" << l << ")\n";
     d_loaded = l;
 }
 
@@ -229,7 +229,7 @@ template<typename FilerImpl, typename ConsolerImpl>
 void
 Store<FilerImpl, ConsolerImpl>::setFilename(const std::string& filename)
 {
-    logger << "Store::setFilename(" << filename << ")\n";
+    logger() << "Store::setFilename(" << filename << ")\n";
     d_filer.setFilename(filename);
 }
 
@@ -245,10 +245,10 @@ template<typename FilerImpl, typename ConsolerImpl>
 bool
 Store<FilerImpl, ConsolerImpl>::load()
 {
-    logger << "Store::load()\n";
+    logger() << "Store::load()\n";
     if (loaded())
     {
-        logger << "already loaded\n";
+        logger() << "already loaded\n";
         return true;
     }
 
@@ -267,10 +267,10 @@ template<typename FilerImpl, typename ConsolerImpl>
 bool
 Store<FilerImpl, ConsolerImpl>::save() const
 {
-    logger << "Store::save()\n";
+    logger() << "Store::save()\n";
     if (!modified())
     {
-        logger << "not modified\n";
+        logger() << "not modified\n";
         return true;
     }
 
@@ -330,12 +330,12 @@ Store<FilerImpl, ConsolerImpl>::set(const std::string& entity,
         const std::string& key,
         const std::string& value)
 {
-    logger << "Store::set(" << entity << ", " << key << ", " << value << ")\n";
+    logger() << "Store::set(" << entity << ", " << key << ", " << value << ")\n";
 
     auto er = findNameable(d_entities, entity);
     if (!er)
     {
-        logger << "Entity not found, adding\n";
+        logger() << "Entity not found, adding\n";
         // new entity
         d_entities.push_back({entity, key, value});
         modified(true);
@@ -343,11 +343,11 @@ Store<FilerImpl, ConsolerImpl>::set(const std::string& entity,
     else
     {
         // existing entity
-        logger << "Entity found\n";
+        logger() << "Entity found\n";
         auto pr = findNameable(er->props(), key);
         if (!pr)
         {
-            logger << "Prop not found, adding\n";
+            logger() << "Prop not found, adding\n";
             // new prop
             er->props().push_back({key, value});
             modified(true);
@@ -355,17 +355,17 @@ Store<FilerImpl, ConsolerImpl>::set(const std::string& entity,
         else
         {
             // existing prop
-            logger << "Prop found\n";
+            logger() << "Prop found\n";
             if (pr->value() != value)
             {
-                logger << "Setting new value\n";
+                logger() << "Setting new value\n";
                 // value has changed
                 pr->value(value);
                 modified(true);
             }
             else
             {
-                logger << "Value hasn't changed\n";
+                logger() << "Value hasn't changed\n";
             }
         }
     }
@@ -375,7 +375,7 @@ template<typename FilerImpl, typename ConsolerImpl>
 void
 Store<FilerImpl, ConsolerImpl>::removeEntity(const std::string& entity)
 {
-    logger << "Store::removeEntity(" << entity << ")\n";
+    logger() << "Store::removeEntity(" << entity << ")\n";
 
     if (!loaded())
     {
@@ -385,11 +385,11 @@ Store<FilerImpl, ConsolerImpl>::removeEntity(const std::string& entity)
     auto er = findNameable(d_entities, entity);
     if (!er)
     {
-        logger << "entity not found\n";
+        logger() << "entity not found\n";
         return;
     }
 
-    logger << "entity removed\n";
+    logger() << "entity removed\n";
     er->skip(true);
     modified(true);
 }
@@ -398,7 +398,7 @@ template<typename FilerImpl, typename ConsolerImpl>
 void
 Store<FilerImpl, ConsolerImpl>::removeProp(const std::string& entity, const std::string& prop)
 {
-    logger << "Store::removeProp(" << entity << ", " << prop << ")\n";
+    logger() << "Store::removeProp(" << entity << ", " << prop << ")\n";
 
     if (!loaded())
     {
@@ -408,18 +408,18 @@ Store<FilerImpl, ConsolerImpl>::removeProp(const std::string& entity, const std:
     auto er = findNameable(d_entities, entity);
     if (!er)
     {
-        logger << "entity not found\n";
+        logger() << "entity not found\n";
         return;
     }
 
     auto pr = findNameable(er->props(), prop);
     if (!pr)
     {
-        logger << "prop not found\n";
+        logger() << "prop not found\n";
         return;
     }
 
-    logger << "prop removed\n";
+    logger() << "prop removed\n";
     pr->skip(true);
     modified(true);
 }

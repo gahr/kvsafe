@@ -42,4 +42,8 @@ struct Logger
     }
 };
 
-extern Logger logger;
+inline Logger& logger()
+{
+    static Logger logger;
+    return logger;
+}
