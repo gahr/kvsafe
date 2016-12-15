@@ -47,11 +47,11 @@ Util::readPassword(const std::string& prompt)
 {
     std::string password;
 
-    std::cout << prompt << ": ";
-    std::cout.flush();
+    std::cerr << prompt << ": ";
+    std::cerr.flush();
     echo(OFF);
     std::cin >> password;
     echo(ON);
-    std::cout << "\n";
+    std::cerr << "\n";
     return password;
 }

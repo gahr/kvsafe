@@ -33,7 +33,7 @@
 
 static void usage()
 {
-    std::cout <<
+    std::cerr <<
 R"kvsafe_help(
 kvsafe [options] [<entity> [<key>]]
     Emit all entities, all keys of an entity, or the value of an entity's key.
@@ -267,7 +267,7 @@ int main(int argc, char ** argv)
     }
     catch (std::runtime_error& e)
     {
-        std::cout << "Error: " << e.what() << "\n";
+        std::cerr << "Error: " << e.what() << "\n";
         return 1;
     }
 }

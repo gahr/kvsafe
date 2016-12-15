@@ -34,7 +34,7 @@ struct Logger
     const Logger& operator<<(const T& val) const
     {
 #ifndef NDEBUG
-        std::cout << val;
+        std::cerr << val;
 #else
         (void)val;
 #endif
