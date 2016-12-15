@@ -86,33 +86,15 @@ public:
             return false;
         }
 
-        std::string triple[3];
+        std::array<std::string, 3> triple;
+        size_t i;
         while (true)
         {
-            size_t i = 0;
-            for (i = 0; i < 3; ++i)
+            i = readTriple(is, triple);
+
+            if (!is && !is.eof())
             {
-                size_t length = 0;
-                is >> length;
-                if (!is)
-                {
-                    if (is.eof())
-                    {
-                        break;
-                    }
-                    return false;
-                }
-                is.ignore();
-                triple[i].resize(length, '\0');
-                is.read(&triple[i][0], length);
-                if (!is)
-                {
-                    if (is.eof())
-                    {
-                        break;
-                    }
-                    return false;
-                }
+                return false;
             }
 
             switch (i)
@@ -176,6 +158,30 @@ public:
     }
 
 private:
+
+    size_t readTriple(std::istream& is, std::array<std::string, 3>& triple)
+    {
+        size_t i;
+        for (i = 0; i < 3; ++i)
+        {
+            size_t length = 0;
+            is >> length;
+            if (!is)
+            {
+                return i;
+            }
+            is.ignore();
+            triple[i].resize(length, '\0');
+            is.read(&triple[i][0], length);
+            if (!is)
+            {
+                return i;
+            }
+        }
+
+        return i;
+    }
+
     bool encrypt(const std::string& in, std::ostream& out) const
     {
         unsigned char noncearr[24];

@@ -31,6 +31,8 @@
 #include <stdexcept>
 #include <unistd.h>
 
+#define USAGE do { usage(); return 1; } while (0)
+
 static void usage()
 {
     std::cerr <<
@@ -128,9 +130,7 @@ int main(int argc, char ** argv)
                 break;
 
             default:
-                usage();
-                return 1;
-                break;
+                USAGE;
         }
     }
 
@@ -151,33 +151,24 @@ int main(int argc, char ** argv)
         switch (mode)
         {
             case BULK:
-                switch (argc)
-                {
-                    case 0:
-                        loadOrThrow();
-                        while (1)
-                        {
-                            std::string triple[3];
-                            for (size_t i = 0; i < 3; ++i)
-                            {
-                                std::getline(std::cin, triple[i]);
-                            }
-                            if (std::cin.eof())
-                            {
-                                break;
-                            }
-                            else
-                            {
-                                store.set(triple[0], triple[1], triple[2]);
-                            }
-                        }
-                        store.save();
-                        break;
+                if (argc != 0)
+                    USAGE;
 
-                    default:
-                        usage();
+                loadOrThrow();
+                while (1)
+                {
+                    std::array<std::string, 3> triple;
+                    for (size_t i = 0; i < 3; ++i)
+                    {
+                        std::getline(std::cin, triple[i]);
+                    }
+                    if (std::cin.eof())
+                    {
                         break;
+                    }
+                    store.set(triple[0], triple[1], triple[2]);
                 }
+                store.save();
                 break;
 
             case DEFAULT:
@@ -205,43 +196,38 @@ int main(int argc, char ** argv)
                         break;
 
                     default:
-                        usage();
-                        break;
+                        USAGE;
                 }
                 break;
 
             case KEYS:
+                if (argc > 1)
+                    USAGE;
+
                 loadOrThrow();
                 store.emitProps(argv[0] ? argv[0] : std::string());
                 break;
 
             case VALS:
+                if (argc > 1)
+                    USAGE;
+
                 loadOrThrow();
                 store.emitValues(argv[0] ? argv[0] : std::string());
                 break;
 
             case CHPASS:
-                switch (argc)
-                {
-                    case 0:
-                        loadOrThrow();
-                        store.changePassword();
-                        store.save();
-                        break;
+                if (argc != 0)
+                    USAGE;
 
-                    default:
-                        usage();
-                        break;
-                }
+                loadOrThrow();
+                store.changePassword();
+                store.save();
                 break;
 
             case DELETE:
                 switch (argc)
                 {
-                    case 0:
-                        usage();
-                        break;
-
                     case 1:
                         loadOrThrow();
                         store.removeEntity(argv[0]);
@@ -255,14 +241,12 @@ int main(int argc, char ** argv)
                         break;
 
                     default:
-                        usage();
-                        break;
+                        USAGE;
                 }
                 break;
 
             case HELP:
-                usage();
-                break;
+                USAGE;
         }
     }
     catch (std::runtime_error& e)
