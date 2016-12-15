@@ -25,8 +25,8 @@
 
 #pragma once
 
-#include <algorithm>
 #include <string>
+#include <algorithm>
 #include <ostream>
 
 struct IsSameName
@@ -86,15 +86,6 @@ findNameable(Container& c, const std::string& name)
     return r;
 }
 
-template<typename Container>
-FindNameableResult<const Container>
-findNameable(const Container& c, const std::string& name)
-{
-    FindNameableResult<const Container> r;
-    r.iter = std::find_if(begin(c), end(c), IsSameName(name));
-    r.found = r.iter != end(c);
-    return r;
-}
 
 class Nameable
 {

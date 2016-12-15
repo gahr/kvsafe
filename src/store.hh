@@ -85,6 +85,88 @@ namespace {
             return true;
         }
     };
+
+    template<typename List>
+    struct EntityIterator
+    {
+        List& d_list;
+        std::regex d_entityRex;
+        std::regex d_propRex;
+        EntityIterator(List& list)
+            : d_list(list)
+            , d_entityRex(".*")
+            , d_propRex(".*")
+        {}
+
+        EntityIterator(List& list, const std::string& e)
+            : d_list(list)
+            , d_entityRex(std::string(".*").append(e).append(".*"))
+            , d_propRex(".*")
+        {}
+
+        EntityIterator(List& list, const std::string& e, const std::string& p)
+            : d_list(list)
+            , d_entityRex(std::string(".*").append(e).append(".*"))
+            , d_propRex(std::string(".*").append(p).append(".*"))
+        {}
+
+        void operator()(const Entity& e)
+        {
+            if (!e.skip() && std::regex_match(e.name(), d_entityRex))
+            {
+                for (auto&& p : e.props())
+                {
+                    if (!p.skip() && std::regex_match(p.name(), d_propRex))
+                    {
+                        add(e, p);
+                    }
+                }
+            }
+        }
+
+        void add(const Entity& e, const Prop& p);
+    };
+
+    template<>
+    void EntityIterator<Consoler::Interface::EntityList>::add(
+            const Entity& e, const Prop&)
+    {
+        d_list.insert({e.name()});
+    }
+
+    template<>
+    void EntityIterator<Consoler::Interface::EntityPropList>::add(
+            const Entity& e, const Prop& p)
+    {
+        d_list.push_back({e.name(), p.name()});
+    }
+
+    template<>
+    void EntityIterator<Consoler::Interface::EntityPropValueList>::add(
+            const Entity& e, const Prop& p)
+    {
+        d_list.push_back({e.name(), p.name(), p.value()});
+    }
+
+    template<typename List>
+    EntityIterator<List> makeEntityIterator(List& list)
+    {
+        return EntityIterator<List>(list);
+    }
+
+    template<typename List>
+    EntityIterator<List> makeEntityIterator(List& list,
+            const std::string& entity)
+    {
+        return EntityIterator<List>(list, entity);
+    }
+
+    template<typename List>
+    EntityIterator<List> makeEntityIterator(List& list,
+            const std::string& entity, const std::string& prop)
+    {
+        return EntityIterator<List>(list, entity, prop);
+    }
 }
 
 template<typename FilerImpl, typename ConsolerImpl>
@@ -197,7 +279,7 @@ Store<FilerImpl, ConsolerImpl>::save() const
 
 template<typename FilerImpl, typename ConsolerImpl>
 void
-Store<FilerImpl, ConsolerImpl>::emitEntities() const
+Store<FilerImpl, ConsolerImpl>::emitEntities(const std::string& entity) const
 {
     std::vector<Consoler::Interface::StringRef> entityList;
 
@@ -206,68 +288,15 @@ Store<FilerImpl, ConsolerImpl>::emitEntities() const
         return;
     }
 
-    for (const auto& e : d_entities)
-    {
-        if (!e.skip())
-        {
-            entityList.push_back(e.name());
-        }
-    }
-
-    return d_consoler.emitEntities(entityList);
-}
-
-namespace {
-
-    template<typename List>
-    struct EntityIterator
-    {
-        List& d_list;
-        EntityIterator(List& list)
-            : d_list(list)
-        {}
-
-        void operator()(const Entity& e)
-        {
-            if (!e.skip())
-            {
-                for (auto&& p : e.props())
-                {
-                    if (!p.skip())
-                    {
-                        add(e, p);
-                    }
-                }
-            }
-        }
-
-        void add(const Entity& e, const Prop& p);
-    };
-
-    template<>
-    void EntityIterator<Consoler::Interface::EntityPropList>::add(
-            const Entity& e, const Prop& p)
-    {
-        d_list.push_back({e.name(), p.name()});
-    }
-
-    template<>
-    void EntityIterator<Consoler::Interface::EntityPropValueList>::add(
-            const Entity& e, const Prop& p)
-    {
-        d_list.push_back({e.name(), p.name(), p.value()});
-    }
-
-    template<typename List>
-    EntityIterator<List> makeEntityIterator(List& list)
-    {
-        return EntityIterator<List>(list);
-    }
+    Consoler::Interface::EntityList e;
+    auto adder = makeEntityIterator(e, entity);
+    std::for_each(d_entities.begin(), d_entities.end(), adder);
+    return d_consoler.emitEntities(e);
 }
 
 template<typename FilerImpl, typename ConsolerImpl>
 void
-Store<FilerImpl, ConsolerImpl>::emitProps(const std::string& entity) const
+Store<FilerImpl, ConsolerImpl>::emitProps(const std::string& entity, const std::string& prop) const
 {
     if (!loaded())
     {
@@ -275,21 +304,8 @@ Store<FilerImpl, ConsolerImpl>::emitProps(const std::string& entity) const
     }
 
     Consoler::Interface::EntityPropList ep;
-    auto adder = makeEntityIterator(ep);
-
-    if (entity.empty())
-    {
-        std::for_each(d_entities.begin(), d_entities.end(), adder);
-    }
-    else
-    {
-        auto e = findNameable(d_entities, entity);
-        if (e)
-        {
-            adder(*(e.operator->()));
-        }
-    }
-
+    auto adder = makeEntityIterator(ep, entity, prop);
+    std::for_each(d_entities.begin(), d_entities.end(), adder);
     return d_consoler.emitProps(ep);
 }
 
@@ -303,32 +319,8 @@ Store<FilerImpl, ConsolerImpl>::emitValues(const std::string& entity, const std:
     }
 
     Consoler::Interface::EntityPropValueList epv;
-    auto adder = makeEntityIterator(epv);
-
-    if (entity.empty())
-    {
-        std::for_each(d_entities.begin(), d_entities.end(), adder);
-    }
-    else
-    {
-        const auto e = findNameable(d_entities, entity);
-        if (e)
-        {
-            if (prop.empty())
-            {
-                adder(*(e.operator->()));
-            }
-            else
-            {
-                const auto p = findNameable(e.iter->props(), prop);
-                if (p)
-                {
-                    epv.push_back({entity, p->name(), p->value()});
-                }
-            }
-        }
-    }
-
+    auto adder = makeEntityIterator(epv, entity, prop);
+    std::for_each(d_entities.begin(), d_entities.end(), adder);
     return d_consoler.emitValues(epv);
 }
 

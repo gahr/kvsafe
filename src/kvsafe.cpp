@@ -38,16 +38,19 @@ static void usage()
     std::cerr <<
 R"kvsafe_help(
 kvsafe [options] [<entity> [<key>]]
-    Emit all entities, all keys of an entity, or the value of an entity's key.
+    Emit all entities, all keys of all matching entity, or the value of all matching entities and keys.
 
 kvsafe [options] <entity> <key> <value>
     Set the value of an entity's key.
 
-kvsafe [options] {-k} [<entity>]
-    Emit the keys of all entities, or of a specified entity.
+kvsafe [options] {-e} [<entity>]
+    Emit all entities matching a specified entity.
 
-kvsafe [options] {-v} [<entity>]
-    Emit the values of all keys of all entities, or of a specified entity.
+kvsafe [options] {-k} [<entity> [<key>]]
+    Emit the keys of matching entity and key.
+
+kvsafe [options] {-v} [<entity> [<key>]]
+    Emit the values of matching entity and key.
 
 kvsafe [options] {-d} <entity> [<key>]
     Delete a whole entity or one of its keys.
@@ -82,6 +85,7 @@ int main(int argc, char ** argv)
         DEFAULT,
         DELETE,
         CHPASS,
+        ENTITIES,
         KEYS,
         VALS,
         HELP
@@ -89,7 +93,7 @@ int main(int argc, char ** argv)
     
     int ch;
     bool done = false;
-    while ((ch = getopt(argc, argv, "bdf:hkpP:v-")) != -1 && !done)
+    while ((ch = getopt(argc, argv, "bdef:hkpP:v-")) != -1 && !done)
     {
         switch (ch)
         {
@@ -103,6 +107,10 @@ int main(int argc, char ** argv)
 
             case 'd':
                 mode = DELETE;
+                break;
+
+            case 'e':
+                mode = ENTITIES;
                 break;
 
             case 'f':
@@ -200,20 +208,30 @@ int main(int argc, char ** argv)
                 }
                 break;
 
-            case KEYS:
+            case ENTITIES:
                 if (argc > 1)
                     USAGE;
 
                 loadOrThrow();
-                store.emitProps(argv[0] ? argv[0] : std::string());
+                store.emitEntities(argv[0] ? argv[0] : std::string());
+                break;
+
+            case KEYS:
+                if (argc > 2)
+                    USAGE;
+
+                loadOrThrow();
+                store.emitProps(argv[0] ? argv[0] : std::string(),
+                                (argv[0] && argv[1]) ? argv[1] : std::string());
                 break;
 
             case VALS:
-                if (argc > 1)
+                if (argc > 2)
                     USAGE;
 
                 loadOrThrow();
-                store.emitValues(argv[0] ? argv[0] : std::string());
+                store.emitValues(argv[0] ? argv[0] : std::string(),
+                                (argv[0] && argv[1]) ? argv[1] : std::string());
                 break;
 
             case CHPASS:

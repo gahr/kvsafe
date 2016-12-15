@@ -60,7 +60,7 @@ public:
 
     void setPassword(const std::string& password)
     {
-        d_key = crypto_hash_sha256(password);
+        d_key = hash(password);
     }
 
     template<typename Store>
@@ -182,25 +182,29 @@ private:
         return i;
     }
 
+    std::string hash(const std::string& val) const
+    {
+        return crypto_hash_sha256(val);
+    }
+
     bool encrypt(const std::string& in, std::ostream& out) const
     {
-        unsigned char noncearr[24];
-        randombytes(noncearr, 24);
-        std::string nonce { std::begin(noncearr), std::end(noncearr) };
-        out << nonce << crypto_secretbox(in, nonce, d_key);
+        std::array<unsigned char, 24> nonce;
+        randombytes(nonce.data(), 24);
+        std::string n { nonce.begin(), nonce.end() };
+        out << n << crypto_secretbox(in, n, d_key);
         return out.good();
     }
-    
+
     bool decrypt(std::istream& in, std::ostream& out) const
     {
-        char noncearr[24];
-        in.read(noncearr, 24);
-        std::string nonce { std::begin(noncearr), std::end(noncearr) };
+        std::array<char, 24> nonce;
+        in.read(nonce.data(), 24);
         std::stringstream ss;
         ss << in.rdbuf();
         try
         {
-            out << crypto_secretbox_open(ss.str(), nonce, d_key);
+            out << crypto_secretbox_open(ss.str(), { nonce.begin(), nonce.end() }, d_key);
         }
         catch (...)
         {

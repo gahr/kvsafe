@@ -25,14 +25,24 @@
 
 #pragma once
 
-#include <functional>
 #include <string>
+#include <functional>
+#include <set>
+
+namespace std {
+
+    bool operator<(const std::reference_wrapper<const std::string>& lhs,
+                   const std::reference_wrapper<const std::string>& rhs)
+    {
+        return lhs.get() < rhs.get();
+    }
+}
 
 namespace Consoler {
 struct Interface
 {
     typedef std::reference_wrapper<const std::string> StringRef;
-    typedef std::vector<StringRef> EntityList;
+    typedef std::set<StringRef> EntityList;
 
     struct EntityPropValue
     {

@@ -29,9 +29,6 @@
 #include "logger.h"
 #include "util.h"
 
-#include <string>
-#include <vector>
-
 template<typename Filer, typename Consoler>
 class Store
 {
@@ -58,8 +55,8 @@ public:
 
     bool changePassword();
 
-    void emitEntities() const;
-    void emitProps(const std::string& entity = std::string()) const;
+    void emitEntities(const std::string& entity = std::string()) const;
+    void emitProps(const std::string& entity = std::string(), const std::string& prop = std::string()) const;
     void emitValues(const std::string& entity = std::string(), const std::string& prop = std::string()) const;
 
     void set(const std::string& entity, 
