@@ -24,67 +24,13 @@
 //
 
 #include "consoler/interface.h"
+#include "password.h"
 
 #include <algorithm>
 #include <functional>
 #include <regex>
 
 namespace {
-
-    class PasswordPrompter
-    {
-    private:
-        std::string d_prompt;
-
-    public:
-        PasswordPrompter(const std::string& prompt)
-            : d_prompt(prompt)
-        {}
-
-        std::string operator()() const
-        {
-            std::string password;
-            while (password.empty())
-            {
-                password = Util::readPassword(d_prompt);
-            }
-            return password;
-        }
-    };
-
-    class PasswordCacher
-    {
-    private:
-        std::string d_password;
-
-    public:
-        PasswordCacher(const std::string& password)
-            : d_password(password)
-        {}
-
-        std::string operator()() const
-        {
-            return d_password;
-        }
-    };
-
-    struct PasswordSetter
-    {
-        template<typename PasswordProvider, typename FilerImpl>
-        typename std::enable_if<!FilerImpl::IS_PASSWORD_BASED, bool>::type
-        operator()(const PasswordProvider&, FilerImpl&)
-        {
-            return false;
-        }
-
-        template<typename PasswordProvider, typename FilerImpl>
-        typename std::enable_if<FilerImpl::IS_PASSWORD_BASED, bool>::type
-        operator()(const PasswordProvider& provider, FilerImpl& filer)
-        {
-            filer.setPassword(provider());
-            return true;
-        }
-    };
 
     template<typename List>
     struct EntityIterator

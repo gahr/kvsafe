@@ -26,10 +26,33 @@
 #pragma once
 
 #include <string>
+#include <unistd.h>
+#include <termios.h>
 
 struct Util
 {
     enum EchoMode { ON, OFF };
-    static void echo(EchoMode mode);
-    static std::string readPassword(const std::string& prompt);
+    static void echo(EchoMode mode)
+    {
+        struct termios tty;
+        tcgetattr(STDIN_FILENO, &tty);
+        if (mode == ON)
+            tty.c_lflag |= ECHO;
+        else
+            tty.c_lflag &= ~ECHO;
+        tcsetattr(STDIN_FILENO, TCSANOW, &tty);
+    }
+
+    static std::string readPassword(const std::string& prompt)
+    {
+        std::string password;
+
+        std::cerr << prompt << ": ";
+        std::cerr.flush();
+        echo(OFF);
+        std::cin >> password;
+        echo(ON);
+        std::cerr << "\n";
+        return password;
+    }
 };

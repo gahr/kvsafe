@@ -1,5 +1,5 @@
 ///
-// Copyright (C) 2014-2015 Pietro Cerutti <gahr@gahr.ch>
+// Copyright (C) 2014-2016 Pietro Cerutti <gahr@gahr.ch>
 // 
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
@@ -23,35 +23,60 @@
 // SUCH DAMAGE.
 //
 
-#include "util.h"
+#pragma once
 
-#include <iostream>
-
-#include <unistd.h>
-#include <termios.h>
-
-void
-Util::echo(EchoMode mode)
+class PasswordPrompter
 {
-    struct termios tty;
-    tcgetattr(STDIN_FILENO, &tty);
-    if (mode == ON)
-        tty.c_lflag |= ECHO;
-    else
-        tty.c_lflag &= ~ECHO;
-    tcsetattr(STDIN_FILENO, TCSANOW, &tty);
-}
+private:
+    std::string d_prompt;
 
-std::string
-Util::readPassword(const std::string& prompt)
+public:
+    PasswordPrompter(const std::string& prompt)
+        : d_prompt(prompt)
+    {}
+
+    std::string operator()() const
+    {
+        std::string password;
+        while (password.empty())
+        {
+            password = Util::readPassword(d_prompt);
+        }
+        return password;
+    }
+};
+
+class PasswordCacher
 {
-    std::string password;
+private:
+    std::string d_password;
 
-    std::cerr << prompt << ": ";
-    std::cerr.flush();
-    echo(OFF);
-    std::cin >> password;
-    echo(ON);
-    std::cerr << "\n";
-    return password;
-}
+public:
+    PasswordCacher(const std::string& password)
+        : d_password(password)
+    {}
+
+    std::string operator()() const
+    {
+        return d_password;
+    }
+};
+
+
+struct PasswordSetter
+{
+    template<typename PasswordProvider, typename FilerImpl>
+    typename std::enable_if<!FilerImpl::IS_PASSWORD_BASED, bool>::type
+    operator()(const PasswordProvider&, FilerImpl&)
+    {
+        return false;
+    }
+
+    template<typename PasswordProvider, typename FilerImpl>
+    typename std::enable_if<FilerImpl::IS_PASSWORD_BASED, bool>::type
+    operator()(const PasswordProvider& provider, FilerImpl& filer)
+    {
+        filer.setPassword(provider());
+        return true;
+    }
+};
