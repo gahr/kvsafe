@@ -1,6 +1,6 @@
-// 
+//
 // Copyright (C) 2014-2016 Pietro Cerutti <gahr@gahr.ch>
-// 
+//
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
 // are met:
@@ -9,7 +9,7 @@
 // 2. Redistributions in binary form must reproduce the above copyright
 //    notice, this list of conditions and the following disclaimer in the
 //    documentation and/or other materials provided with the distribution.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY AUTHOR AND CONTRIBUTORS ``AS IS'' AND
 // ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -25,22 +25,25 @@
 
 #pragma once
 
-namespace Filer {
+namespace Filer
+{
 struct Interface
 {
-    enum : bool { IS_PASSWORD_BASED = false };
+    enum : bool
+    {
+        IS_PASSWORD_BASED = false
+    };
 
-    Interface(int& argc, char ** argv);
+    Interface(int& argc, char** argv);
 
     void setFilename(const std::string& filename);
 
     void setPassword(const std::string& password);
 
-    template<typename Store>
+    template <typename Store>
     bool load(Store& store);
 
-    template<typename EntityList>
+    template <typename EntityList>
     bool save(const EntityList& entities);
-
 };
 }

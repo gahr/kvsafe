@@ -1,6 +1,6 @@
 ///
 // Copyright (C) 2014-2016 Pietro Cerutti <gahr@gahr.ch>
-// 
+//
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
 // are met:
@@ -9,7 +9,7 @@
 // 2. Redistributions in binary form must reproduce the above copyright
 //    notice, this list of conditions and the following disclaimer in the
 //    documentation and/or other materials provided with the distribution.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY AUTHOR AND CONTRIBUTORS ``AS IS'' AND
 // ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -30,93 +30,102 @@
 #include <functional>
 #include <regex>
 
-namespace {
+namespace
+{
 
-    template<typename List>
-    struct EntityIterator
+template <typename List>
+struct EntityIterator
+{
+    List& d_list;
+    std::regex d_entityRex;
+    std::regex d_propRex;
+    EntityIterator(List& list)
+        : d_list(list)
+        , d_entityRex(".*")
+        , d_propRex(".*")
     {
-        List& d_list;
-        std::regex d_entityRex;
-        std::regex d_propRex;
-        EntityIterator(List& list)
-            : d_list(list)
-            , d_entityRex(".*")
-            , d_propRex(".*")
-        {}
+    }
 
-        EntityIterator(List& list, const std::string& e)
-            : d_list(list)
-            , d_entityRex(std::string(".*").append(e).append(".*"))
-            , d_propRex(".*")
-        {}
+    EntityIterator(List& list, const std::string& e)
+        : d_list(list)
+        , d_entityRex(std::string(".*").append(e).append(".*"))
+        , d_propRex(".*")
+    {
+    }
 
-        EntityIterator(List& list, const std::string& e, const std::string& p)
-            : d_list(list)
-            , d_entityRex(std::string(".*").append(e).append(".*"))
-            , d_propRex(std::string(".*").append(p).append(".*"))
-        {}
+    EntityIterator(List& list, const std::string& e, const std::string& p)
+        : d_list(list)
+        , d_entityRex(std::string(".*").append(e).append(".*"))
+        , d_propRex(std::string(".*").append(p).append(".*"))
+    {
+    }
 
-        void operator()(const Entity& e)
+    void operator()(const Entity& e)
+    {
+        if (!e.skip() && std::regex_match(e.name(), d_entityRex))
         {
-            if (!e.skip() && std::regex_match(e.name(), d_entityRex))
+            for (auto&& p : e.props())
             {
-                for (auto&& p : e.props())
+                if (!p.skip() && std::regex_match(p.name(), d_propRex))
                 {
-                    if (!p.skip() && std::regex_match(p.name(), d_propRex))
-                    {
-                        add(e, p);
-                    }
+                    add(e, p);
                 }
             }
         }
-
-        void add(const Entity& e, const Prop& p);
-    };
-
-    template<>
-    void EntityIterator<Consoler::Interface::EntityList>::add(
-            const Entity& e, const Prop&)
-    {
-        d_list.insert({e.name()});
     }
 
-    template<>
-    void EntityIterator<Consoler::Interface::EntityPropList>::add(
-            const Entity& e, const Prop& p)
-    {
-        d_list.insert({e.name(), p.name()});
-    }
+    void add(const Entity& e, const Prop& p);
+};
 
-    template<>
-    void EntityIterator<Consoler::Interface::EntityPropValueList>::add(
-            const Entity& e, const Prop& p)
-    {
-        d_list.insert({e.name(), p.name(), p.value()});
-    }
-
-    template<typename List>
-    EntityIterator<List> makeEntityIterator(List& list)
-    {
-        return EntityIterator<List>(list);
-    }
-
-    template<typename List>
-    EntityIterator<List> makeEntityIterator(List& list,
-            const std::string& entity)
-    {
-        return EntityIterator<List>(list, entity);
-    }
-
-    template<typename List>
-    EntityIterator<List> makeEntityIterator(List& list,
-            const std::string& entity, const std::string& prop)
-    {
-        return EntityIterator<List>(list, entity, prop);
-    }
+template <>
+void
+EntityIterator<Consoler::Interface::EntityList>::add(const Entity& e,
+                                                     const Prop&)
+{
+    d_list.insert({ e.name() });
 }
 
-template<typename FilerImpl, typename ConsolerImpl>
-Store<FilerImpl, ConsolerImpl>::Store(int& argc, char ** argv)
+template <>
+void
+EntityIterator<Consoler::Interface::EntityPropList>::add(const Entity& e,
+                                                         const Prop& p)
+{
+    d_list.insert({ e.name(), p.name() });
+}
+
+template <>
+void
+EntityIterator<Consoler::Interface::EntityPropValueList>::add(const Entity& e,
+                                                              const Prop& p)
+{
+    d_list.insert({ e.name(), p.name(), p.value() });
+}
+
+template <typename List>
+EntityIterator<List>
+makeEntityIterator(List& list)
+{
+    return EntityIterator<List>(list);
+}
+
+template <typename List>
+EntityIterator<List>
+makeEntityIterator(List& list, const std::string& entity)
+{
+    return EntityIterator<List>(list, entity);
+}
+
+template <typename List>
+EntityIterator<List>
+makeEntityIterator(List& list, const std::string& entity,
+                   const std::string& prop)
+{
+    return EntityIterator<List>(list, entity, prop);
+}
+}
+
+template <typename FilerImpl, typename ConsolerImpl>
+Store<FilerImpl, ConsolerImpl>::Store(int& argc, char** argv)
     : d_modified(false)
     , d_loaded(false)
     , d_explicitPassword(false)
@@ -126,20 +135,20 @@ Store<FilerImpl, ConsolerImpl>::Store(int& argc, char ** argv)
     logger() << "Store::Store\n";
 }
 
-template<typename FilerImpl, typename ConsolerImpl>
+template <typename FilerImpl, typename ConsolerImpl>
 Store<FilerImpl, ConsolerImpl>::~Store()
 {
     logger() << "Store::~Store\n";
 }
 
-template<typename FilerImpl, typename ConsolerImpl>
+template <typename FilerImpl, typename ConsolerImpl>
 bool
 Store<FilerImpl, ConsolerImpl>::modified() const
 {
     return d_modified;
 }
 
-template<typename FilerImpl, typename ConsolerImpl>
+template <typename FilerImpl, typename ConsolerImpl>
 void
 Store<FilerImpl, ConsolerImpl>::modified(bool m)
 {
@@ -147,7 +156,7 @@ Store<FilerImpl, ConsolerImpl>::modified(bool m)
     d_modified = m;
 }
 
-template<typename FilerImpl, typename ConsolerImpl>
+template <typename FilerImpl, typename ConsolerImpl>
 void
 Store<FilerImpl, ConsolerImpl>::setPassword(const std::string& password)
 {
@@ -156,14 +165,14 @@ Store<FilerImpl, ConsolerImpl>::setPassword(const std::string& password)
     d_explicitPassword = true;
 }
 
-template<typename FilerImpl, typename ConsolerImpl>
+template <typename FilerImpl, typename ConsolerImpl>
 bool
 Store<FilerImpl, ConsolerImpl>::loaded() const
 {
     return d_loaded;
 }
 
-template<typename FilerImpl, typename ConsolerImpl>
+template <typename FilerImpl, typename ConsolerImpl>
 void
 Store<FilerImpl, ConsolerImpl>::loaded(bool l)
 {
@@ -171,7 +180,7 @@ Store<FilerImpl, ConsolerImpl>::loaded(bool l)
     d_loaded = l;
 }
 
-template<typename FilerImpl, typename ConsolerImpl>
+template <typename FilerImpl, typename ConsolerImpl>
 void
 Store<FilerImpl, ConsolerImpl>::setFilename(const std::string& filename)
 {
@@ -179,15 +188,14 @@ Store<FilerImpl, ConsolerImpl>::setFilename(const std::string& filename)
     d_filer.setFilename(filename);
 }
 
-template<typename FilerImpl, typename ConsolerImpl>
+template <typename FilerImpl, typename ConsolerImpl>
 auto
-Store<FilerImpl, ConsolerImpl>::entities() const
-    -> decltype(d_entities)
+Store<FilerImpl, ConsolerImpl>::entities() const -> decltype(d_entities)
 {
     return d_entities;
 }
 
-template<typename FilerImpl, typename ConsolerImpl>
+template <typename FilerImpl, typename ConsolerImpl>
 bool
 Store<FilerImpl, ConsolerImpl>::load()
 {
@@ -209,7 +217,7 @@ Store<FilerImpl, ConsolerImpl>::load()
     return ret;
 }
 
-template<typename FilerImpl, typename ConsolerImpl>
+template <typename FilerImpl, typename ConsolerImpl>
 bool
 Store<FilerImpl, ConsolerImpl>::save() const
 {
@@ -223,7 +231,7 @@ Store<FilerImpl, ConsolerImpl>::save() const
     return d_filer.save(entities());
 }
 
-template<typename FilerImpl, typename ConsolerImpl>
+template <typename FilerImpl, typename ConsolerImpl>
 void
 Store<FilerImpl, ConsolerImpl>::emitEntities(const std::string& entity) const
 {
@@ -238,9 +246,10 @@ Store<FilerImpl, ConsolerImpl>::emitEntities(const std::string& entity) const
     return d_consoler.emitEntities(e);
 }
 
-template<typename FilerImpl, typename ConsolerImpl>
+template <typename FilerImpl, typename ConsolerImpl>
 void
-Store<FilerImpl, ConsolerImpl>::emitProps(const std::string& entity, const std::string& prop) const
+Store<FilerImpl, ConsolerImpl>::emitProps(const std::string& entity,
+                                          const std::string& prop) const
 {
     if (!loaded())
     {
@@ -253,9 +262,10 @@ Store<FilerImpl, ConsolerImpl>::emitProps(const std::string& entity, const std::
     return d_consoler.emitProps(ep);
 }
 
-template<typename FilerImpl, typename ConsolerImpl>
+template <typename FilerImpl, typename ConsolerImpl>
 void
-Store<FilerImpl, ConsolerImpl>::emitValues(const std::string& entity, const std::string& prop) const
+Store<FilerImpl, ConsolerImpl>::emitValues(const std::string& entity,
+                                           const std::string& prop) const
 {
     if (!loaded())
     {
@@ -268,20 +278,21 @@ Store<FilerImpl, ConsolerImpl>::emitValues(const std::string& entity, const std:
     return d_consoler.emitValues(epv);
 }
 
-template<typename FilerImpl, typename ConsolerImpl>
+template <typename FilerImpl, typename ConsolerImpl>
 void
-Store<FilerImpl, ConsolerImpl>::set(const std::string& entity, 
-        const std::string& key,
-        const std::string& value)
+Store<FilerImpl, ConsolerImpl>::set(const std::string& entity,
+                                    const std::string& key,
+                                    const std::string& value)
 {
-    logger() << "Store::set(" << entity << ", " << key << ", " << value << ")\n";
+    logger() << "Store::set(" << entity << ", " << key << ", " << value
+             << ")\n";
 
     auto er = findNameable(d_entities, entity);
     if (!er)
     {
         logger() << "Entity not found, adding\n";
         // new entity
-        d_entities.push_back({entity, key, value});
+        d_entities.push_back({ entity, key, value });
         modified(true);
     }
     else
@@ -293,7 +304,7 @@ Store<FilerImpl, ConsolerImpl>::set(const std::string& entity,
         {
             logger() << "Prop not found, adding\n";
             // new prop
-            er->props().push_back({key, value});
+            er->props().push_back({ key, value });
             modified(true);
         }
         else
@@ -315,7 +326,7 @@ Store<FilerImpl, ConsolerImpl>::set(const std::string& entity,
     }
 }
 
-template<typename FilerImpl, typename ConsolerImpl>
+template <typename FilerImpl, typename ConsolerImpl>
 void
 Store<FilerImpl, ConsolerImpl>::removeEntity(const std::string& entity)
 {
@@ -338,9 +349,10 @@ Store<FilerImpl, ConsolerImpl>::removeEntity(const std::string& entity)
     modified(true);
 }
 
-template<typename FilerImpl, typename ConsolerImpl>
+template <typename FilerImpl, typename ConsolerImpl>
 void
-Store<FilerImpl, ConsolerImpl>::removeProp(const std::string& entity, const std::string& prop)
+Store<FilerImpl, ConsolerImpl>::removeProp(const std::string& entity,
+                                           const std::string& prop)
 {
     logger() << "Store::removeProp(" << entity << ", " << prop << ")\n";
 
@@ -368,7 +380,7 @@ Store<FilerImpl, ConsolerImpl>::removeProp(const std::string& entity, const std:
     modified(true);
 }
 
-template<typename FilerImpl, typename ConsolerImpl>
+template <typename FilerImpl, typename ConsolerImpl>
 bool
 Store<FilerImpl, ConsolerImpl>::changePassword()
 {

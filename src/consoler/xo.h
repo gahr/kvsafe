@@ -1,6 +1,6 @@
 ///
 // Copyright (C) 2014-2016 Pietro Cerutti <gahr@gahr.ch>
-// 
+//
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
 // are met:
@@ -9,7 +9,7 @@
 // 2. Redistributions in binary form must reproduce the above copyright
 //    notice, this list of conditions and the following disclaimer in the
 //    documentation and/or other materials provided with the distribution.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY AUTHOR AND CONTRIBUTORS ``AS IS'' AND
 // ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -34,10 +34,11 @@ extern "C" {
 #include <libxo/xo.h>
 }
 
-namespace Consoler {
+namespace Consoler
+{
 struct Xo
 {
-    Xo(int& argc, char ** argv)
+    Xo(int& argc, char** argv)
     {
         argc = xo_parse_args(argc, argv);
     }
@@ -65,8 +66,8 @@ struct Xo
         for (const auto& elem : list)
         {
             xo_open_instance("entry");
-            xo_emit("{k:entity/%s}.{:property/%s}\n",
-                    elem.entity.get().c_str(), elem.prop.get().c_str());
+            xo_emit("{k:entity/%s}.{:property/%s}\n", elem.entity.get().c_str(),
+                    elem.prop.get().c_str());
             xo_close_instance("entry");
         }
         xo_close_list("entry");
@@ -79,8 +80,7 @@ struct Xo
         {
             xo_open_instance("entry");
             xo_emit("{k:entity/%s}.{:property/%s}: {:value/%s}\n",
-                    elem.entity.get().c_str(), 
-                    elem.prop.get().c_str(),
+                    elem.entity.get().c_str(), elem.prop.get().c_str(),
                     elem.value.get().c_str());
             xo_close_instance("entry");
         }

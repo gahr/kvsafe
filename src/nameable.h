@@ -1,6 +1,6 @@
 ///
 // Copyright (C) 2014-2016 Pietro Cerutti <gahr@gahr.ch>
-// 
+//
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
 // are met:
@@ -9,7 +9,7 @@
 // 2. Redistributions in binary form must reproduce the above copyright
 //    notice, this list of conditions and the following disclaimer in the
 //    documentation and/or other materials provided with the distribution.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY AUTHOR AND CONTRIBUTORS ``AS IS'' AND
 // ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -32,15 +32,18 @@
 struct IsSameName
 {
     const std::string& name;
-    IsSameName(const std::string& name) : name{name} {}
-    template<typename T>
+    IsSameName(const std::string& name)
+        : name{ name }
+    {
+    }
+    template <typename T>
     bool operator()(const T& obj)
     {
         return name == obj.name();
     }
 };
 
-template<typename Container>
+template <typename Container>
 struct FindNameableResult
 {
     typedef typename Container::iterator Iterator;
@@ -58,7 +61,7 @@ struct FindNameableResult
     }
 };
 
-template<typename Container>
+template <typename Container>
 struct FindNameableResult<const Container>
 {
     typedef typename Container::const_iterator Iterator;
@@ -76,7 +79,7 @@ struct FindNameableResult<const Container>
     }
 };
 
-template<typename Container>
+template <typename Container>
 FindNameableResult<Container>
 findNameable(Container& c, const std::string& name)
 {
@@ -92,8 +95,9 @@ class Nameable
 
 public:
     Nameable(const std::string& name)
-        : d_name { name }
-    {}
+        : d_name{ name }
+    {
+    }
 
     const std::string& name() const
     {
@@ -106,7 +110,8 @@ public:
     }
 };
 
-inline std::ostream& operator<<(std::ostream& os, const Nameable& n)
+inline std::ostream&
+operator<<(std::ostream& os, const Nameable& n)
 {
     os << n.name();
     return os;

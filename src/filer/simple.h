@@ -1,6 +1,6 @@
 ///
 // Copyright (C) 2014-2016 Pietro Cerutti <gahr@gahr.ch>
-// 
+//
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
 // are met:
@@ -9,7 +9,7 @@
 // 2. Redistributions in binary form must reproduce the above copyright
 //    notice, this list of conditions and the following disclaimer in the
 //    documentation and/or other materials provided with the distribution.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY AUTHOR AND CONTRIBUTORS ``AS IS'' AND
 // ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -36,16 +36,20 @@
 #include <crypto_hash_sha256.h>
 #include <randombytes.h>
 
-namespace Filer {
+namespace Filer
+{
 class Simple
 {
     std::string d_filename;
     std::string d_key;
 
 public:
-    enum : bool { IS_PASSWORD_BASED = true };
+    enum : bool
+    {
+        IS_PASSWORD_BASED = true
+    };
 
-    Simple(int&, char **)
+    Simple(int&, char**)
     {
     }
 
@@ -63,7 +67,7 @@ public:
         d_key = hash(password);
     }
 
-    template<typename Store>
+    template <typename Store>
     bool load(Store& store)
     {
         if (d_filename.empty())
@@ -71,7 +75,7 @@ public:
             return false;
         }
 
-        std::ifstream ifs { d_filename.c_str(), std::ios::binary };
+        std::ifstream ifs{ d_filename.c_str(), std::ios::binary };
         ifs.seekg(0, std::ios_base::end);
         if (ifs.tellg() <= 0)
         {
@@ -99,18 +103,18 @@ public:
 
             switch (i)
             {
-                case 0:
-                    // nothing read
-                    return true;
-                    break;
-                case 1:
-                case 2:
-                    // partial triple
-                    return false;
-                    break;
-                default:
-                    store.set(triple[0], triple[1], triple[2]);
-                    break;
+            case 0:
+                // nothing read
+                return true;
+                break;
+            case 1:
+            case 2:
+                // partial triple
+                return false;
+                break;
+            default:
+                store.set(triple[0], triple[1], triple[2]);
+                break;
             }
         }
 
@@ -118,7 +122,7 @@ public:
         return true;
     }
 
-    template<typename EntityList>
+    template <typename EntityList>
     bool save(const EntityList& entities) const
     {
         if (d_filename.empty())
@@ -141,9 +145,8 @@ public:
                     continue;
                 }
 
-                os << e.name().length()  << ":" << e.name() 
-                   << p.name().length()  << ":" << p.name()
-                   << p.value().length() << ":" << p.value();
+                os << e.name().length() << ":" << e.name() << p.name().length()
+                   << ":" << p.name() << p.value().length() << ":" << p.value();
 
                 if (!os.good())
                 {
@@ -152,12 +155,11 @@ public:
             }
         }
 
-        std::ofstream ofs { d_filename.c_str(), std::ios::binary };
+        std::ofstream ofs{ d_filename.c_str(), std::ios::binary };
         return encrypt(os, ofs);
     }
 
 private:
-
     size_t readTriple(std::istream& is, std::array<std::string, 3>& triple)
     {
         size_t i;
@@ -190,7 +192,7 @@ private:
     {
         std::array<unsigned char, 24> nonce;
         randombytes(nonce.data(), 24);
-        std::string n { nonce.begin(), nonce.end() };
+        std::string n{ nonce.begin(), nonce.end() };
         out << n << crypto_secretbox(in.str(), n, d_key);
         return out.good();
     }
@@ -207,7 +209,8 @@ private:
         ss << in.rdbuf();
         try
         {
-            out.str(crypto_secretbox_open(ss.str(), { nonce.begin(), nonce.end() }, d_key));
+            out.str(crypto_secretbox_open(
+                ss.str(), { nonce.begin(), nonce.end() }, d_key));
         }
         catch (...)
         {

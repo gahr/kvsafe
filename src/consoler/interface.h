@@ -1,6 +1,6 @@
 ///
 // Copyright (C) 2014-2016 Pietro Cerutti <gahr@gahr.ch>
-// 
+//
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
 // are met:
@@ -9,7 +9,7 @@
 // 2. Redistributions in binary form must reproduce the above copyright
 //    notice, this list of conditions and the following disclaimer in the
 //    documentation and/or other materials provided with the distribution.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY AUTHOR AND CONTRIBUTORS ``AS IS'' AND
 // ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -29,29 +29,34 @@
 #include <functional>
 #include <set>
 
-namespace std {
+namespace std
+{
 
-    bool operator<(const std::reference_wrapper<const std::string>& lhs,
-                   const std::reference_wrapper<const std::string>& rhs)
-    {
-        return lhs.get() < rhs.get();
-    }
-
-    bool operator==(const std::reference_wrapper<const std::string>& lhs,
-                    const std::reference_wrapper<const std::string>& rhs)
-    {
-        return lhs.get() == rhs.get();
-    }
+bool
+operator<(const std::reference_wrapper<const std::string>& lhs,
+          const std::reference_wrapper<const std::string>& rhs)
+{
+    return lhs.get() < rhs.get();
 }
 
-namespace Consoler {
+bool
+operator==(const std::reference_wrapper<const std::string>& lhs,
+           const std::reference_wrapper<const std::string>& rhs)
+{
+    return lhs.get() == rhs.get();
+}
+}
 
-    template<typename EV>
-    bool compareEntityValue(const EV& lhs, const EV& rhs)
-    {
-        return lhs.entity < rhs.entity ||
-               (lhs.entity == rhs.entity && lhs.prop < rhs.prop);
-    }
+namespace Consoler
+{
+
+template <typename EV>
+bool
+compareEntityValue(const EV& lhs, const EV& rhs)
+{
+    return lhs.entity < rhs.entity ||
+           (lhs.entity == rhs.entity && lhs.prop < rhs.prop);
+}
 
 struct Interface
 {
@@ -83,7 +88,7 @@ struct Interface
     };
     typedef std::set<EntityProp> EntityPropList;
 
-    Interface(int& argc, char ** argv);
+    Interface(int& argc, char** argv);
     void emitEntities(const EntityList& list) const;
     void emitProps(const EntityPropList& list) const;
     void emitValues(const EntityPropValueList& list) const;

@@ -1,6 +1,6 @@
 ///
 // Copyright (C) 2014-2016 Pietro Cerutti <gahr@gahr.ch>
-// 
+//
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
 // are met:
@@ -9,7 +9,7 @@
 // 2. Redistributions in binary form must reproduce the above copyright
 //    notice, this list of conditions and the following disclaimer in the
 //    documentation and/or other materials provided with the distribution.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY AUTHOR AND CONTRIBUTORS ``AS IS'' AND
 // ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -32,7 +32,8 @@ class PasswordPrompter
 public:
     PasswordPrompter(const std::string& prompt)
         : d_prompt(prompt)
-    {}
+    {
+    }
 
     std::string operator()() const
     {
@@ -52,7 +53,8 @@ class PasswordCacher
 public:
     PasswordCacher(const std::string& password)
         : d_password(password)
-    {}
+    {
+    }
 
     std::string operator()() const
     {
@@ -62,14 +64,14 @@ public:
 
 struct PasswordSetter
 {
-    template<typename PasswordProvider, typename FilerImpl>
+    template <typename PasswordProvider, typename FilerImpl>
     typename std::enable_if<!FilerImpl::IS_PASSWORD_BASED, bool>::type
     operator()(const PasswordProvider&, FilerImpl&)
     {
         return false;
     }
 
-    template<typename PasswordProvider, typename FilerImpl>
+    template <typename PasswordProvider, typename FilerImpl>
     typename std::enable_if<FilerImpl::IS_PASSWORD_BASED, bool>::type
     operator()(const PasswordProvider& provider, FilerImpl& filer)
     {

@@ -1,6 +1,6 @@
 ///
 // Copyright (C) 2014-2016 Pietro Cerutti <gahr@gahr.ch>
-// 
+//
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
 // are met:
@@ -9,7 +9,7 @@
 // 2. Redistributions in binary form must reproduce the above copyright
 //    notice, this list of conditions and the following disclaimer in the
 //    documentation and/or other materials provided with the distribution.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY AUTHOR AND CONTRIBUTORS ``AS IS'' AND
 // ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -31,12 +31,18 @@
 #include <stdexcept>
 #include <unistd.h>
 
-#define USAGE do { usage(); return 1; } while (0)
+#define USAGE                                                                  \
+    do                                                                         \
+    {                                                                          \
+        usage();                                                               \
+        return 1;                                                              \
+    } while (0)
 
-static void usage()
+static void
+usage()
 {
     std::cerr <<
-R"kvsafe_help(
+        R"kvsafe_help(
 kvsafe [options] [<entity> [<key>]]
     Emit all entities, all keys of all matching entity, or the value of all matching entities and keys.
 
@@ -73,14 +79,16 @@ OPTIONS
 )kvsafe_help";
 }
 
-int main(int argc, char ** argv)
+int
+main(int argc, char** argv)
 {
     Store<Filer::Simple, Consoler::Xo> store(argc, argv);
 
-    std::string filename { std::getenv("HOME") };
+    std::string filename{ std::getenv("HOME") };
     filename.append("/.kvsafe.dat");
 
-    enum {
+    enum
+    {
         BULK,
         DEFAULT,
         DELETE,
@@ -89,56 +97,56 @@ int main(int argc, char ** argv)
         KEYS,
         VALS,
         HELP
-    } mode { DEFAULT };
-    
+    } mode{ DEFAULT };
+
     int ch;
     bool done = false;
     while ((ch = getopt(argc, argv, "bdef:hkpP:v-")) != -1 && !done)
     {
         switch (ch)
         {
-            case 'P':
-                store.setPassword(optarg);
-                break;
+        case 'P':
+            store.setPassword(optarg);
+            break;
 
-            case 'b':
-                mode = BULK;
-                break;
+        case 'b':
+            mode = BULK;
+            break;
 
-            case 'd':
-                mode = DELETE;
-                break;
+        case 'd':
+            mode = DELETE;
+            break;
 
-            case 'e':
-                mode = ENTITIES;
-                break;
+        case 'e':
+            mode = ENTITIES;
+            break;
 
-            case 'f':
-                filename = optarg;
-                break;
+        case 'f':
+            filename = optarg;
+            break;
 
-            case 'h':
-                mode = HELP;
-                break;
+        case 'h':
+            mode = HELP;
+            break;
 
-            case 'k':
-                mode = KEYS;
-                break;
+        case 'k':
+            mode = KEYS;
+            break;
 
-            case 'p':
-                mode = CHPASS;
-                break;
+        case 'p':
+            mode = CHPASS;
+            break;
 
-            case 'v':
-                mode = VALS;
-                break;
+        case 'v':
+            mode = VALS;
+            break;
 
-            case '-':
-                done = true;
-                break;
+        case '-':
+            done = true;
+            break;
 
-            default:
-                USAGE;
+        default:
+            USAGE;
         }
     }
 
@@ -158,113 +166,113 @@ int main(int argc, char ** argv)
     {
         switch (mode)
         {
-            case BULK:
-                if (argc != 0)
-                    USAGE;
-
-                loadOrThrow();
-                while (1)
-                {
-                    std::array<std::string, 3> triple;
-                    for (size_t i = 0; i < 3; ++i)
-                    {
-                        std::getline(std::cin, triple[i]);
-                    }
-                    if (std::cin.eof())
-                    {
-                        break;
-                    }
-                    store.set(triple[0], triple[1], triple[2]);
-                }
-                store.save();
-                break;
-
-            case DEFAULT:
-                switch (argc)
-                {
-                    case 0:
-                        loadOrThrow();
-                        store.emitEntities();
-                        break;
-
-                    case 1:
-                        loadOrThrow();
-                        store.emitProps(argv[0]);
-                        break;
-
-                    case 2:
-                        loadOrThrow();
-                        store.emitValues(argv[0], argv[1]);
-                        break;
-
-                    case 3:
-                        loadOrThrow();
-                        store.set(argv[0], argv[1], argv[2]);
-                        store.save();
-                        break;
-
-                    default:
-                        USAGE;
-                }
-                break;
-
-            case ENTITIES:
-                if (argc > 1)
-                    USAGE;
-
-                loadOrThrow();
-                store.emitEntities(argv[0] ? argv[0] : std::string());
-                break;
-
-            case KEYS:
-                if (argc > 2)
-                    USAGE;
-
-                loadOrThrow();
-                store.emitProps(argv[0] ? argv[0] : std::string(),
-                                (argv[0] && argv[1]) ? argv[1] : std::string());
-                break;
-
-            case VALS:
-                if (argc > 2)
-                    USAGE;
-
-                loadOrThrow();
-                store.emitValues(argv[0] ? argv[0] : std::string(),
-                                (argv[0] && argv[1]) ? argv[1] : std::string());
-                break;
-
-            case CHPASS:
-                if (argc != 0)
-                    USAGE;
-
-                loadOrThrow();
-                store.changePassword();
-                store.save();
-                break;
-
-            case DELETE:
-                switch (argc)
-                {
-                    case 1:
-                        loadOrThrow();
-                        store.removeEntity(argv[0]);
-                        store.save();
-                        break;
-
-                    case 2:
-                        loadOrThrow();
-                        store.removeProp(argv[0], argv[1]);
-                        store.save();
-                        break;
-
-                    default:
-                        USAGE;
-                }
-                break;
-
-            case HELP:
+        case BULK:
+            if (argc != 0)
                 USAGE;
+
+            loadOrThrow();
+            while (1)
+            {
+                std::array<std::string, 3> triple;
+                for (size_t i = 0; i < 3; ++i)
+                {
+                    std::getline(std::cin, triple[i]);
+                }
+                if (std::cin.eof())
+                {
+                    break;
+                }
+                store.set(triple[0], triple[1], triple[2]);
+            }
+            store.save();
+            break;
+
+        case DEFAULT:
+            switch (argc)
+            {
+            case 0:
+                loadOrThrow();
+                store.emitEntities();
+                break;
+
+            case 1:
+                loadOrThrow();
+                store.emitProps(argv[0]);
+                break;
+
+            case 2:
+                loadOrThrow();
+                store.emitValues(argv[0], argv[1]);
+                break;
+
+            case 3:
+                loadOrThrow();
+                store.set(argv[0], argv[1], argv[2]);
+                store.save();
+                break;
+
+            default:
+                USAGE;
+            }
+            break;
+
+        case ENTITIES:
+            if (argc > 1)
+                USAGE;
+
+            loadOrThrow();
+            store.emitEntities(argv[0] ? argv[0] : std::string());
+            break;
+
+        case KEYS:
+            if (argc > 2)
+                USAGE;
+
+            loadOrThrow();
+            store.emitProps(argv[0] ? argv[0] : std::string(),
+                            (argv[0] && argv[1]) ? argv[1] : std::string());
+            break;
+
+        case VALS:
+            if (argc > 2)
+                USAGE;
+
+            loadOrThrow();
+            store.emitValues(argv[0] ? argv[0] : std::string(),
+                             (argv[0] && argv[1]) ? argv[1] : std::string());
+            break;
+
+        case CHPASS:
+            if (argc != 0)
+                USAGE;
+
+            loadOrThrow();
+            store.changePassword();
+            store.save();
+            break;
+
+        case DELETE:
+            switch (argc)
+            {
+            case 1:
+                loadOrThrow();
+                store.removeEntity(argv[0]);
+                store.save();
+                break;
+
+            case 2:
+                loadOrThrow();
+                store.removeProp(argv[0], argv[1]);
+                store.save();
+                break;
+
+            default:
+                USAGE;
+            }
+            break;
+
+        case HELP:
+            USAGE;
         }
     }
     catch (std::runtime_error& e)
