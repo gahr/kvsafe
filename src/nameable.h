@@ -1,5 +1,5 @@
 ///
-// Copyright (C) 2014-2015 Pietro Cerutti <gahr@gahr.ch>
+// Copyright (C) 2014-2016 Pietro Cerutti <gahr@gahr.ch>
 // 
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
@@ -86,15 +86,24 @@ findNameable(Container& c, const std::string& name)
     return r;
 }
 
-
 class Nameable
 {
     std::string d_name;
 
 public:
-    Nameable(const std::string& name) : d_name{name} {}
-    const std::string& name() const { return d_name; }
-    void name(const std::string& name) { d_name = name; }
+    Nameable(const std::string& name)
+        : d_name { name }
+    {}
+
+    const std::string& name() const
+    {
+        return d_name;
+    }
+
+    void name(const std::string& name)
+    {
+        d_name = name;
+    }
 };
 
 inline std::ostream& operator<<(std::ostream& os, const Nameable& n)
