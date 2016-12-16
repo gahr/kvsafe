@@ -1,5 +1,5 @@
 ///
-// Copyright (C) 2014-2015 Pietro Cerutti <gahr@gahr.ch>
+// Copyright (C) 2014-2016 Pietro Cerutti <gahr@gahr.ch>
 // 
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
@@ -36,10 +36,6 @@ class Entity : public Nameable, public Skippable
     std::vector<Prop> d_props;
 
 public:
-    Entity(const std::string& name)
-        : Nameable{name}
-    {}
-
     Entity(const std::string& name, const std::string& key, const std::string& value)
         : Nameable{name}
     {

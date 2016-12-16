@@ -1,5 +1,5 @@
 ///
-// Copyright (C) 2014-2015 Pietro Cerutti <gahr@gahr.ch>
+// Copyright (C) 2014-2016 Pietro Cerutti <gahr@gahr.ch>
 // 
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
@@ -33,15 +33,18 @@ class Prop : public Nameable, public Skippable
     std::string d_value;
 
 public:
-    Prop(const std::string& name)
-        : Nameable{name}
-    {}
-
     Prop(const std::string& name, const std::string& value)
         : Nameable{name}
         , d_value{value}
     {}
-    const std::string& value() const { return d_value; }
-    void value(const std::string& value) { d_value = value; }
 
+    const std::string& value() const
+    {
+        return d_value;
+    }
+
+    void value(const std::string& value)
+    {
+        d_value = value;
+    }
 };

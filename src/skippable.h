@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2014-2015 Pietro Cerutti <gahr@gahr.ch>
+///
+// Copyright (C) 2014-2016 Pietro Cerutti <gahr@gahr.ch>
 // 
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
@@ -30,8 +30,17 @@ class Skippable
     bool d_skip;
 
 public:
-    Skippable(bool skip = false) : d_skip{skip} {}
+    Skippable(bool skip = false)
+        : d_skip{skip}
+    {}
 
-    bool skip() const { return d_skip; }
-    void skip(bool skip) { d_skip = skip; }
+    bool skip() const
+    {
+        return d_skip;
+    }
+
+    void skip(bool skip)
+    {
+        d_skip = skip;
+    }
 };
