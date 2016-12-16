@@ -12,6 +12,8 @@ MAKE=	ninja
 MAKE=	make
 .endif
 
+build: ${BUILD_DIR}/kvsafe
+
 ${BUILD_DIR}/kvsafe: configure
 	cd ${BUILD_DIR} && ${MAKE}
 
@@ -31,3 +33,5 @@ test: ${BUILD_DIR}/kvsafe
 
 indent:
 	find src -type f | xargs ${CLANG_FORMAT} -i --style=file
+
+full: clean indent build test
