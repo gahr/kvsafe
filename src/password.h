@@ -27,7 +27,6 @@
 
 class PasswordPrompter
 {
-private:
     std::string d_prompt;
 
 public:
@@ -48,7 +47,6 @@ public:
 
 class PasswordCacher
 {
-private:
     std::string d_password;
 
 public:
@@ -61,7 +59,6 @@ public:
         return d_password;
     }
 };
-
 
 struct PasswordSetter
 {
