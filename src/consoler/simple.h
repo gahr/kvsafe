@@ -30,7 +30,7 @@
 namespace Consoler {
 struct Simple
 {
-    Simple(int& argc, char ** argv)
+    Simple(int&, char **)
     {}
 
     void emitEntities(const Interface::EntityList& list) const

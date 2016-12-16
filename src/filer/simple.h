@@ -45,7 +45,7 @@ class Simple
 public:
     enum : bool { IS_PASSWORD_BASED = true };
 
-    Simple(int& argc, char **)
+    Simple(int&, char **)
     {
     }
 
