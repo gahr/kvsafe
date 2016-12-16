@@ -84,14 +84,14 @@ namespace {
     void EntityIterator<Consoler::Interface::EntityPropList>::add(
             const Entity& e, const Prop& p)
     {
-        d_list.push_back({e.name(), p.name()});
+        d_list.insert({e.name(), p.name()});
     }
 
     template<>
     void EntityIterator<Consoler::Interface::EntityPropValueList>::add(
             const Entity& e, const Prop& p)
     {
-        d_list.push_back({e.name(), p.name(), p.value()});
+        d_list.insert({e.name(), p.name(), p.value()});
     }
 
     template<typename List>
@@ -227,8 +227,6 @@ template<typename FilerImpl, typename ConsolerImpl>
 void
 Store<FilerImpl, ConsolerImpl>::emitEntities(const std::string& entity) const
 {
-    std::vector<Consoler::Interface::StringRef> entityList;
-
     if (!loaded())
     {
         return;

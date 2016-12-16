@@ -36,9 +36,23 @@ namespace std {
     {
         return lhs.get() < rhs.get();
     }
+
+    bool operator==(const std::reference_wrapper<const std::string>& lhs,
+                    const std::reference_wrapper<const std::string>& rhs)
+    {
+        return lhs.get() == rhs.get();
+    }
 }
 
 namespace Consoler {
+
+    template<typename EV>
+    bool compareEntityValue(const EV& lhs, const EV& rhs)
+    {
+        return lhs.entity < rhs.entity ||
+               (lhs.entity == rhs.entity && lhs.prop < rhs.prop);
+    }
+
 struct Interface
 {
     typedef std::reference_wrapper<const std::string> StringRef;
@@ -49,15 +63,25 @@ struct Interface
         StringRef entity;
         StringRef prop;
         StringRef value;
+
+        bool operator<(const EntityPropValue& other) const
+        {
+            return compareEntityValue(*this, other);
+        }
     };
-    typedef std::vector<EntityPropValue> EntityPropValueList;
+    typedef std::set<EntityPropValue> EntityPropValueList;
 
     struct EntityProp
     {
         StringRef entity;
         StringRef prop;
+
+        bool operator<(const EntityProp& other) const
+        {
+            return compareEntityValue(*this, other);
+        }
     };
-    typedef std::vector<EntityProp> EntityPropList;
+    typedef std::set<EntityProp> EntityPropList;
 
     Interface(int& argc, char ** argv);
     void emitEntities(const EntityList& list) const;
