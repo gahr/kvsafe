@@ -145,8 +145,9 @@ public:
                     continue;
                 }
 
-                os << e.name().length() << ":" << e.name() << p.name().length()
-                   << ":" << p.name() << p.value().length() << ":" << p.value();
+                os << e.name().length() << ":" << e.name()
+                   << p.name().length() << ":" << p.name()
+                   << p.value().length() << ":" << p.value();
 
                 if (!os.good())
                 {

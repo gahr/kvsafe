@@ -31,11 +31,11 @@
 #include <stdexcept>
 #include <unistd.h>
 
-#define USAGE                                                                  \
-    do                                                                         \
-    {                                                                          \
-        usage();                                                               \
-        return 1;                                                              \
+#define USAGE                                                                \
+    do                                                                       \
+    {                                                                        \
+        usage();                                                             \
+        return 1;                                                            \
     } while (0)
 
 static void

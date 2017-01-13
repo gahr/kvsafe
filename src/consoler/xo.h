@@ -66,8 +66,8 @@ struct Xo
         for (const auto& elem : list)
         {
             xo_open_instance("entry");
-            xo_emit("{k:entity/%s}.{:property/%s}\n", elem.entity.get().c_str(),
-                    elem.prop.get().c_str());
+            xo_emit("{k:entity/%s}.{:property/%s}\n",
+                    elem.entity.get().c_str(), elem.prop.get().c_str());
             xo_close_instance("entry");
         }
         xo_close_list("entry");
