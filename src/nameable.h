@@ -46,7 +46,7 @@ struct IsSameName
 template <typename Container>
 struct FindNameableResult
 {
-    typedef typename Container::iterator Iterator;
+    using Iterator = typename Container::iterator;
     Iterator iter;
     bool found;
 
@@ -64,7 +64,7 @@ struct FindNameableResult
 template <typename Container>
 struct FindNameableResult<const Container>
 {
-    typedef typename Container::const_iterator Iterator;
+    using Iterator = typename Container::const_iterator;
     Iterator iter;
     bool found;
 

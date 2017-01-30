@@ -32,7 +32,7 @@
 template <typename Filer, typename Consoler>
 class Store
 {
-    typedef std::vector<Entity> Entities;
+    using Entities = std::vector<Entity>;
 
     Entities d_entities;
     bool d_modified;

@@ -60,8 +60,8 @@ compareEntityValue(const EV& lhs, const EV& rhs)
 
 struct Interface
 {
-    typedef std::reference_wrapper<const std::string> StringRef;
-    typedef std::set<StringRef> EntityList;
+    using StringRef = std::reference_wrapper<const std::string>;
+    using EntityList = std::set<StringRef>;
 
     struct EntityPropValue
     {
@@ -74,7 +74,7 @@ struct Interface
             return compareEntityValue(*this, other);
         }
     };
-    typedef std::set<EntityPropValue> EntityPropValueList;
+    using EntityPropValueList = std::set<EntityPropValue>;
 
     struct EntityProp
     {
@@ -86,7 +86,7 @@ struct Interface
             return compareEntityValue(*this, other);
         }
     };
-    typedef std::set<EntityProp> EntityPropList;
+    using EntityPropList = std::set<EntityProp>;
 
     Interface(int& argc, char** argv);
     void emitEntities(const EntityList& list) const;
