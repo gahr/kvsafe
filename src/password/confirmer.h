@@ -1,5 +1,5 @@
 ///
-// Copyright (C) 2014-2015 Pietro Cerutti <gahr@gahr.ch>
+// Copyright (C) 2019 Pietro Cerutti <gahr@gahr.ch>
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
@@ -25,41 +25,60 @@
 
 #pragma once
 
-#include <string>
-#include <unistd.h>
-#include <termios.h>
-
-struct Util
+namespace Password
 {
-    enum EchoMode
+template <typename Provider>
+class Confirmer
+{
+    const Provider& d_provider1;
+    const Provider& d_provider2;
+    std::string d_onFailure;
+
+public:
+    Confirmer(const Provider& provider)
+        : d_provider1(provider)
+        , d_provider2(provider)
     {
-        ON,
-        OFF
-    };
-    static void echo(EchoMode mode)
-    {
-        struct termios tty;
-        tcgetattr(STDIN_FILENO, &tty);
-        if (mode == ON)
-            tty.c_lflag |= ECHO;
-        else
-            tty.c_lflag &= ~ECHO;
-        tcsetattr(STDIN_FILENO, TCSANOW, &tty);
     }
 
-    static bool readPassword(std::string& password, const std::string& prompt)
+    Confirmer(const Provider& provider1, const Provider& provider2)
+        : d_provider1(provider1)
+        , d_provider2(provider2)
     {
-        std::cerr << prompt << ": ";
-        std::cerr.flush();
-        echo(OFF);
-        std::cin >> password;
-        echo(ON);
-        std::cerr << "\n";
-        if (std::cin.eof())
+    }
+
+    void setFailureMessage(std::string onFailure)
+    {
+        d_onFailure = std::move(onFailure);
+    }
+
+    std::string operator()() const
+    {
+        std::string password1, password2;
+        while (true)
         {
-            std::cin.clear();
-            return false;
+            password1 = d_provider1();
+            if (password1.empty())
+            {
+                return password1;
+            }
+
+            password2 = d_provider2();
+            if (password2.empty())
+            {
+                return password2;
+            }
+
+            if (password1 == password2)
+            {
+                return password1;
+            }
+
+            if (!d_onFailure.empty())
+            {
+                std::cerr << d_onFailure << "\n";
+            }
         }
-        return true;
     }
 };
+} // namespace Password

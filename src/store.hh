@@ -24,7 +24,9 @@
 //
 
 #include "consoler/interface.h"
-#include "password.h"
+#include "password/cacher.h"
+#include "password/prompter.h"
+#include "password/confirmer.h"
 
 #include <algorithm>
 #include <functional>
@@ -128,7 +130,7 @@ template <typename FilerImpl, typename ConsolerImpl>
 Store<FilerImpl, ConsolerImpl>::Store(int& argc, char** argv)
     : d_modified(false)
     , d_loaded(false)
-    , d_explicitPassword(false)
+    , d_passwordSet(false)
     , d_filer(argc, argv)
     , d_consoler(argc, argv)
 {
@@ -157,12 +159,35 @@ Store<FilerImpl, ConsolerImpl>::modified(bool m)
 }
 
 template <typename FilerImpl, typename ConsolerImpl>
-void
+template <typename Provider>
+bool
+Store<FilerImpl, ConsolerImpl>::setPasswordWith(Provider&& p)
+{
+    logger() << "Store::setPasswordWith\n";
+
+    if (!FilerImpl::IS_PASSWORD_BASED)
+    {
+        logger() << "not password based\n";
+        return true;
+    }
+
+    std::string password = p();
+    if (!password.empty())
+    {
+        d_filer.setPassword(password);
+        d_passwordSet = true;
+    }
+
+    logger() << "password" << (password.empty() ? " not" : "") << " set\n";
+
+    return d_passwordSet;
+}
+
+template <typename FilerImpl, typename ConsolerImpl>
+bool
 Store<FilerImpl, ConsolerImpl>::setPassword(const std::string& password)
 {
-    logger() << "Store::setPassword\n";
-    PasswordSetter()(PasswordCacher(password), d_filer);
-    d_explicitPassword = true;
+    return setPasswordWith(Password::Cacher(password));
 }
 
 template <typename FilerImpl, typename ConsolerImpl>
@@ -206,9 +231,12 @@ Store<FilerImpl, ConsolerImpl>::load()
         return true;
     }
 
-    if (!d_explicitPassword)
+    if (!d_passwordSet)
     {
-        PasswordSetter()(PasswordPrompter("Password"), d_filer);
+        if (!setPasswordWith(Password::Prompter("Password")))
+        {
+            return false;
+        }
     }
 
     bool ret = d_filer.load(*this);
@@ -389,7 +417,12 @@ Store<FilerImpl, ConsolerImpl>::changePassword()
         return false;
     }
 
-    if (PasswordSetter()(PasswordPrompter("New password"), d_filer))
+    Password::Confirmer<Password::Prompter> confirmer(
+        Password::Prompter("New password"),
+        Password::Prompter("New password (again)"));
+    confirmer.setFailureMessage("Passwords do not match.");
+
+    if (setPasswordWith(confirmer))
     {
         modified(true);
     }

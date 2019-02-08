@@ -1,5 +1,5 @@
 ///
-// Copyright (C) 2014-2015 Pietro Cerutti <gahr@gahr.ch>
+// Copyright (C) 2019 Pietro Cerutti <gahr@gahr.ch>
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
@@ -25,41 +25,28 @@
 
 #pragma once
 
-#include <string>
-#include <unistd.h>
-#include <termios.h>
-
-struct Util
+namespace Password
 {
-    enum EchoMode
+class Prompter
+{
+    std::string d_prompt;
+
+public:
+    Prompter(const std::string& prompt)
+        : d_prompt(prompt)
     {
-        ON,
-        OFF
-    };
-    static void echo(EchoMode mode)
-    {
-        struct termios tty;
-        tcgetattr(STDIN_FILENO, &tty);
-        if (mode == ON)
-            tty.c_lflag |= ECHO;
-        else
-            tty.c_lflag &= ~ECHO;
-        tcsetattr(STDIN_FILENO, TCSANOW, &tty);
     }
 
-    static bool readPassword(std::string& password, const std::string& prompt)
+    std::string operator()() const
     {
-        std::cerr << prompt << ": ";
-        std::cerr.flush();
-        echo(OFF);
-        std::cin >> password;
-        echo(ON);
-        std::cerr << "\n";
-        if (std::cin.eof())
-        {
-            std::cin.clear();
-            return false;
-        }
-        return true;
+        std::string password;
+        do {
+            if (!Util::readPassword(password, d_prompt))
+            {
+                break;
+            }
+        } while (password.empty());
+        return password;
     }
 };
+} // namespace Password
