@@ -1,8 +1,8 @@
 BUILD_DIR?=		build_dir
 CMAKE_BUILD_TYPE?=	Release
 CMAKE_GENERATOR?=	Ninja
-CLANG_FORMAT?=		/usr/local/bin/clang-format39
-TCLSH?=			/usr/local/bin/tclsh8.6
+CLANG_FORMAT?=		/usr/local/bin/clang-format60
+TCLSH?=			/usr/local/bin/tclsh8.7
 
 CMAKE_ARGS=		-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
 
