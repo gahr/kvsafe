@@ -31,14 +31,7 @@
 #include <stdexcept>
 #include <unistd.h>
 
-#define USAGE                                                                \
-    do                                                                       \
-    {                                                                        \
-        usage();                                                             \
-        return 1;                                                            \
-    } while (0)
-
-static void
+static int
 usage()
 {
     std::cerr <<
@@ -77,6 +70,8 @@ OPTIONS
     --
         Mark the end of the options. Allows entity names starting with a dash.
 )kvsafe_help";
+
+    return 1;
 }
 
 int
@@ -146,7 +141,7 @@ main(int argc, char** argv)
             break;
 
         default:
-            USAGE;
+            return usage();
         }
     }
 
@@ -168,7 +163,7 @@ main(int argc, char** argv)
         {
         case BULK:
             if (argc != 0)
-                USAGE;
+                return usage();
 
             loadOrThrow();
             while (1)
@@ -212,13 +207,13 @@ main(int argc, char** argv)
                 break;
 
             default:
-                USAGE;
+                return usage();
             }
             break;
 
         case ENTITIES:
             if (argc > 1)
-                USAGE;
+                return usage();
 
             loadOrThrow();
             store.emitEntities(argv[0] ? argv[0] : std::string());
@@ -226,7 +221,7 @@ main(int argc, char** argv)
 
         case KEYS:
             if (argc > 2)
-                USAGE;
+                return usage();
 
             loadOrThrow();
             store.emitProps(argv[0] ? argv[0] : std::string(),
@@ -235,7 +230,7 @@ main(int argc, char** argv)
 
         case VALS:
             if (argc > 2)
-                USAGE;
+                return usage();
 
             loadOrThrow();
             store.emitValues(argv[0] ? argv[0] : std::string(),
@@ -244,7 +239,7 @@ main(int argc, char** argv)
 
         case CHPASS:
             if (argc != 0)
-                USAGE;
+                return usage();
 
             loadOrThrow();
             store.changePassword();
@@ -267,12 +262,12 @@ main(int argc, char** argv)
                 break;
 
             default:
-                USAGE;
+                return usage();
             }
             break;
 
         case HELP:
-            USAGE;
+            return usage();
         }
     }
     catch (std::runtime_error& e)
