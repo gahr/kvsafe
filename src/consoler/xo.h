@@ -29,7 +29,8 @@
 #include "entity.h"
 #include "prop.h"
 
-extern "C" {
+extern "C"
+{
 #include <stdio.h>
 #include <libxo/xo.h>
 }
@@ -87,4 +88,4 @@ struct Xo
         xo_close_list("entry");
     }
 };
-}
+} // namespace Consoler

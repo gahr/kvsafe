@@ -40,7 +40,8 @@ public:
     std::string operator()() const
     {
         std::string password;
-        do {
+        do
+        {
             if (!Util::readPassword(password, d_prompt))
             {
                 break;

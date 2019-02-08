@@ -45,7 +45,7 @@ operator==(const std::reference_wrapper<const std::string>& lhs,
 {
     return lhs.get() == rhs.get();
 }
-}
+} // namespace std
 
 namespace Consoler
 {
@@ -93,4 +93,4 @@ struct Interface
     void emitProps(const EntityPropList& list) const;
     void emitValues(const EntityPropValueList& list) const;
 };
-}
+} // namespace Consoler

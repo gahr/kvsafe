@@ -124,7 +124,7 @@ makeEntityIterator(List& list, const std::string& entity,
 {
     return EntityIterator<List>(list, entity, prop);
 }
-}
+} // namespace
 
 template <typename FilerImpl, typename ConsolerImpl>
 Store<FilerImpl, ConsolerImpl>::Store(int& argc, char** argv)

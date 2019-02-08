@@ -60,4 +60,4 @@ struct Simple
         }
     }
 };
-}
+} // namespace Consoler

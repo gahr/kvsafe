@@ -46,4 +46,4 @@ struct Interface
     template <typename EntityList>
     bool save(const EntityList& entities);
 };
-}
+} // namespace Filer

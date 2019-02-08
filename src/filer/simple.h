@@ -220,4 +220,4 @@ private:
         return in.good();
     }
 };
-}
+} // namespace Filer

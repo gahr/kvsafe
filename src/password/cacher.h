@@ -42,6 +42,4 @@ public:
         return d_password;
     }
 };
-
-
 } // namespace Password
