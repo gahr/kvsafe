@@ -15,7 +15,7 @@ MAKE=	make
 build: ${BUILD_DIR}/kvsafe
 
 ${BUILD_DIR}/kvsafe: configure
-	cd ${BUILD_DIR} && ${MAKE}
+	${MAKE} -C ${BUILD_DIR}
 
 configure: ${BUILD_DIR} ${BUILD_DIR}/CMakeCache.txt
 
